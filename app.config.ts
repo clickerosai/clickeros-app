@@ -32,7 +32,7 @@ const env = {
   appSlug: "clickeros-app",
   // S3 URL of the app logo - set this to the URL returned by generate_image when creating custom logo
   // Leave empty to use the default icon from assets/images/icon.png
-  logoUrl: "https://d2xsxph8kpxj0f.cloudfront.net/310519663430704517/ay2EhJVeab7JGJNXoKGCjk/clickeros-icon-7mgHsJN2R29eWVg5cvG4u7.png",
+  logoUrl: "/manus-storage/clickeros-official-logo_705f0ee7.png",
   scheme: schemeFromBundleId,
   iosBundleId: bundleId,
   androidPackage: bundleId,
