@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Privacy Policy — Clickeros AI</title>
+  <meta name="description" content="Clickeros AI Privacy Policy — how we collect, use, and protect your data. Covers CAMERA, RECORD_AUDIO, READ_PHONE_STATE, and GET_ACCOUNTS permissions." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://clickerosai-ay2ehjve.manus.space/privacy-policy" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary: #7C3AED;
+      --primary-light: #EDE9FE;
+      --teal: #0EA5E9;
+      --green: #22C55E;
+      --amber: #F59E0B;
+      --pink: #EC4899;
+      --slate-900: #0F172A;
+      --slate-700: #334155;
+      --slate-500: #64748B;
+      --slate-200: #E2E8F0;
+      --slate-100: #F1F5F9;
+      --white: #FFFFFF;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: #F8FAFC;
+      color: var(--slate-900);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Header ── */
+    .header {
+      background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 50%, #4C1D95 100%);
+      padding: 40px 24px 48px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .header::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 70% 30%, rgba(255,255,255,0.08) 0%, transparent 60%);
+    }
+    .header-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 999px;
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #FFFFFF;
+      margin-bottom: 16px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+    .header h1 {
+      font-size: clamp(28px, 5vw, 42px);
+      font-weight: 800;
+      color: #FFFFFF;
+      margin-bottom: 10px;
+      letter-spacing: -0.5px;
+    }
+    .header p {
+      font-size: 15px;
+      color: rgba(255,255,255,0.75);
+      max-width: 520px;
+      margin: 0 auto 20px;
+    }
+    .header-meta {
+      display: inline-flex;
+      align-items: center;
+      gap: 20px;
+      background: rgba(255,255,255,0.12);
+      border-radius: 12px;
+      padding: 10px 20px;
+      font-size: 13px;
+      color: rgba(255,255,255,0.85);
+    }
+    .header-meta span { display: flex; align-items: center; gap: 6px; }
+
+    /* ── Layout ── */
+    .container {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+    }
+
+    /* ── Table of Contents ── */
+    .toc {
+      background: var(--white);
+      border: 1px solid var(--slate-200);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 40px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .toc h2 {
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--slate-500);
+      margin-bottom: 14px;
+    }
+    .toc ol {
+      list-style: none;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 6px;
+    }
+    .toc li a {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--primary);
+      text-decoration: none;
+      padding: 6px 10px;
+      border-radius: 8px;
+      transition: background 0.15s;
+    }
+    .toc li a:hover { background: var(--primary-light); }
+    .toc li a::before {
+      content: attr(data-num);
+      font-weight: 700;
+      font-size: 11px;
+      color: var(--slate-500);
+      min-width: 18px;
+    }
+
+    /* ── Sections ── */
+    .section {
+      background: var(--white);
+      border: 1px solid var(--slate-200);
+      border-radius: 16px;
+      padding: 28px;
+      margin-bottom: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .section-title .accent-bar {
+      width: 4px;
+      height: 24px;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+    .section-title h2 {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--slate-900);
+    }
+    .section p {
+      font-size: 14px;
+      color: var(--slate-500);
+      margin-bottom: 12px;
+      line-height: 1.75;
+    }
+    .section p:last-child { margin-bottom: 0; }
+
+    /* ── Permission Cards ── */
+    .permission-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+    .permission-card {
+      border: 1px solid var(--slate-200);
+      border-radius: 14px;
+      padding: 20px;
+      border-left-width: 4px;
+      background: var(--white);
+    }
+    .perm-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .perm-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      flex-shrink: 0;
+    }
+    .perm-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--slate-900);
+      margin-bottom: 3px;
+    }
+    .perm-badge {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+    .perm-row {
+      display: grid;
+      grid-template-columns: 110px 1fr;
+      gap: 6px;
+      margin-bottom: 8px;
+      font-size: 13px;
+    }
+    .perm-row:last-child { margin-bottom: 0; }
+    .perm-label { font-weight: 600; color: var(--slate-900); }
+    .perm-value { color: var(--slate-500); line-height: 1.6; }
+
+    /* ── Data Table ── */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin-top: 12px;
+    }
+    .data-table th {
+      background: var(--slate-100);
+      padding: 10px 14px;
+      text-align: left;
+      font-weight: 700;
+      color: var(--slate-700);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .data-table th:first-child { border-radius: 8px 0 0 8px; }
+    .data-table th:last-child  { border-radius: 0 8px 8px 0; }
+    .data-table td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--slate-200);
+      color: var(--slate-500);
+      vertical-align: top;
+    }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table td:first-child { font-weight: 600; color: var(--slate-900); }
+
+    /* ── Rights Grid ── */
+    .rights-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .right-card {
+      background: var(--slate-100);
+      border-radius: 10px;
+      padding: 14px;
+      border: 1px solid var(--slate-200);
+    }
+    .right-card .right-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--teal);
+      margin-bottom: 4px;
+    }
+    .right-card p { font-size: 12px; color: var(--slate-500); margin: 0; }
+
+    /* ── Contact Box ── */
+    .contact-box {
+      background: var(--primary-light);
+      border: 1px solid rgba(124,58,237,0.2);
+      border-radius: 14px;
+      padding: 20px;
+      margin-top: 12px;
+    }
+    .contact-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+    .contact-row:last-child { margin-bottom: 0; }
+    .contact-label { font-weight: 700; color: var(--primary); min-width: 120px; }
+    .contact-value { color: var(--slate-700); }
+    .contact-value a { color: var(--primary); text-decoration: none; }
+    .contact-value a:hover { text-decoration: underline; }
+
+    /* ── Footer ── */
+    .footer {
+      text-align: center;
+      padding: 32px 24px;
+      border-top: 1px solid var(--slate-200);
+      font-size: 13px;
+      color: var(--slate-500);
+      background: var(--white);
+    }
+    .footer a { color: var(--primary); text-decoration: none; }
+    .footer a:hover { text-decoration: underline; }
+
+    /* ── Responsive ── */
+    @media (max-width: 640px) {
+      .permission-grid { grid-template-columns: 1fr; }
+      .perm-row { grid-template-columns: 1fr; gap: 2px; }
+      .perm-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.3px; color: var(--slate-500); }
+      .toc ol { grid-template-columns: 1fr; }
+      .rights-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<header class="header">
+  <div class="header-badge">🔒 Privacy Policy</div>
+  <h1>Clickeros AI Privacy Policy</h1>
+  <p>We are committed to protecting your privacy and being transparent about how we use your data.</p>
+  <div class="header-meta">
+    <span>📅 Last Updated: May 11, 2026</span>
+    <span>🏢 Clickeros AI, Inc.</span>
+    <span>🌐 clickeros.ai</span>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- ── Table of Contents ── -->
+  <div class="toc">
+    <h2>Table of Contents</h2>
+    <ol>
+      <li><a href="#intro" data-num="1">Introduction</a></li>
+      <li><a href="#permissions" data-num="2">App Permissions</a></li>
+      <li><a href="#collection" data-num="3">Data We Collect</a></li>
+      <li><a href="#use" data-num="4">How We Use Data</a></li>
+      <li><a href="#retention" data-num="5">Data Retention</a></li>
+      <li><a href="#security" data-num="6">Data Security</a></li>
+      <li><a href="#third-party" data-num="7">Third-Party Services</a></li>
+      <li><a href="#children" data-num="8">Children's Privacy</a></li>
+      <li><a href="#rights" data-num="9">Your Rights</a></li>
+      <li><a href="#changes" data-num="10">Policy Changes</a></li>
+      <li><a href="#contact" data-num="11">Contact Us</a></li>
+    </ol>
+  </div>
+
+  <!-- ── 1. Introduction ── -->
+  <section class="section" id="intro">
+    <div class="section-title">
+      <div class="accent-bar" style="background:#7C3AED;"></div>
+      <h2>1. Introduction</h2>
+    </div>
+    <p>Clickeros AI ("we," "our," or "us") operates the Clickeros AI mobile application (the "App") available on Android and iOS. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our App.</p>
+    <p>By downloading and using the App, you agree to the collection and use of information in accordance with this policy. If you do not agree with any part of this policy, please do not use the App.</p>
+    <p>This policy was last updated on <strong>May 11, 2026</strong> and is effective immediately for new users and within 30 days for existing users.</p>
+  </section>
+
+  <!-- ── 2. Permissions ── -->
+  <section class="section" id="permissions">
+    <div class="section-title">
+      <div class="accent-bar" style="background:#0EA5E9;"></div>
+      <h2>2. App Permissions &amp; Data Use</h2>
+    </div>
+    <p>The Clickeros AI app requests the following device permissions. Each permission is used only for the purpose stated below and is never activated without your direct action. You may revoke any permission at any time through your device settings.</p>
+
+    <div class="permission-grid">
+
+      <!-- CAMERA -->
+      <div class="permission-card" style="border-left-color:#7C3AED;">
+        <div class="perm-header">
+          <div class="perm-icon" style="background:#EDE9FE;">📷</div>
+          <div>
+            <div class="perm-name">CAMERA</div>
+            <span class="perm-badge" style="background:#EDE9FE;color:#7C3AED;">android.permission.CAMERA</span>
+          </div>
+        </div>
+        <div class="perm-row">
+          <span class="perm-label">Purpose</span>
+          <span class="perm-value">Capture photos and videos for ad creatives, upload product images for AI ad generation, and scan QR codes for account linking or platform integrations.</span>
+        </div>
+        <div class="perm-row">
+          <span class="perm-label">Data Collected</span>
+          <span class="perm-value">Only images and videos you explicitly capture and choose to upload. The camera is never accessed in the background.</span>
+        </div>
+        <div class="perm-row">
+          <span class="perm-label">Shared With</span>
+          <span class="perm-value">Images are processed by our AI servers to generate ad copy. They are never sold or shared with third parties for advertising.</span>
+        </div>
+      </div>
+
+      <!-- RECORD_AUDIO -->
+      <div class="permission-card" style="border-left-color:#EC4899;">
+        <div class="perm-header">
+          <div class="perm-icon" style="background:#FCE7F3;">🎙️</div>
+          <div>
+            <div class="perm-name">RECORD_AUDIO</div>
+            <span class="perm-badge" style="background:#FCE7F3;color:#EC4899;">android.permission.RECORD_AUDIO</span>
+          </div>
+        </div>
+        <div class="perm-row">
+          <span class="perm-label">Purpose</span>
+          <span class="perm-value">Enable voice-to-text input for the AI Strategy Copilot, allowing you to dictate campaign briefs and product descriptions. Also used for AI video script narration.</span>
+        </div>
+        <div class="perm-row">
+          <span class="perm-label">Data Collected</span>
+          <span class="perm-value">Audio is captured only when you actively initiate a voice session. It is processed in real-time for transcription and not stored permanently after processing.</span>
+        </div>
+        <div class="perm-row">
+          <span class="perm-label">Shared With</span>
+          <span class="perm-value">Audio is sent to our secure AI transcription service for real-time processing only. Raw audio is not retained or shared with third parties.</span>
+        </div>
+      </div>
+
+      <!-- READ_PHONE_STATE -->
+      <div class="permission-card" style="border-left-color:#F59E0B;">
+        <div class="perm-header">
+          <div class="perm-icon" style="background:#FEF3C7;">📱</div>
+          <div>
+            <div class="perm-name">READ_PHONE_STATE</div>
+            <span class="perm-badge" style="background:#FEF3C7;color:#D97706;">android.permission.READ_PHONE_STATE</span>
+          </div>
+        </div>
+        <div class="perm-row">
+          <span class="perm-label">Purpose</span>
+          <span class="perm-value">Detect active calls to pause audio playback and notifications during phone calls. Also used for device identification to maintain secure login sessions.</span>
+        </div>
+        <div class="perm-row">
+          <span class="perm-label">Data Collected</span>
+          <span class="perm-value">Call state (idle, ringing, or in-call) and a non-reversible device identifier for session security. We do not access your phone number, IMEI, or call logs.</span>
+        </div>
+        <div class="perm-row">
+          <span class="perm-label">Shared With</span>
+          <span class="perm-value">Used internally for session management only. Not shared with third parties, advertisers, or data brokers.</span>
+        </div>
+      </div>
+
+      <!-- GET_ACCOUNTS -->
+      <div class="permission-card" style="border-left-color:#22C55E;">
+        <div class="perm-header">
+          <div class="perm-icon" style="background:#DCFCE7;">👤</div>
+          <div>
+            <div class="perm-name">GET_ACCOUNTS</div>
+            <span class="perm-badge" style="background:#DCFCE7;color:#16A34A;">android.permission.GET_ACCOUNTS</span>
+          </div>
+        </div>
+        <div class="perm-row">
+          <span class="perm-label">Purpose</span>
+          <span class="perm-value">Facilitate single sign-on (SSO) with Google and other account providers, allowing quick login without a separate password. Pre-fills your email in account forms.</span>
+        </div>
+        <div class="perm-row">
+          <span class="perm-label">Data Collected</span>
+          <span class="perm-value">Only the email address and display name of the account you explicitly select and authorize. We do not read passwords or access account data beyond what you consent to share.</span>
+        </div>
+        <div class="perm-row">
+          <span class="perm-label">Shared With</span>
+          <span class="perm-value">Used for authentication only. Your email is stored in our secure database to identify your account. It is not sold or shared for marketing purposes.</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── 3. Data We Collect ── -->
+  <section class="section" id="collection">
+    <div class="section-title">
+      <div class="accent-bar" style="background:#22C55E;"></div>
+      <h2>3. Information We Collect</h2>
+    </div>
+    <p>We collect the following categories of information to provide and improve our services:</p>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Category</th>
+          <th>Examples</th>
+          <th>Purpose</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Account Information</td>
+          <td>Name, email address, profile photo</td>
+          <td>User authentication and account management</td>
+        </tr>
+        <tr>
+          <td>Campaign Data</td>
+          <td>Ad copy, targeting settings, budgets, performance metrics</td>
+          <td>Providing the core AI advertising platform features</td>
+        </tr>
+        <tr>
+          <td>Usage Data</td>
+          <td>Features used, screens visited, actions taken</td>
+          <td>Product improvement and analytics</td>
+        </tr>
+        <tr>
+          <td>Device Information</td>
+          <td>Device type, OS version, app version, device ID</td>
+          <td>Security, fraud prevention, and compatibility</td>
+        </tr>
+        <tr>
+          <td>Voice Transcriptions</td>
+          <td>Text transcribed from voice input sessions</td>
+          <td>AI dictation features (stored as campaign history)</td>
+        </tr>
+        <tr>
+          <td>Media Files</td>
+          <td>Photos and videos you upload for ad creatives</td>
+          <td>AI creative generation and campaign management</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ── 4. How We Use Data ── -->
+  <section class="section" id="use">
+    <div class="section-title">
+      <div class="accent-bar" style="background:#0EA5E9;"></div>
+      <h2>4. How We Use Your Information</h2>
+    </div>
+    <p>We use the information we collect exclusively for the following purposes:</p>
+    <ul style="list-style:none;display:grid;gap:8px;margin-top:8px;">
+      <li style="display:flex;gap:10px;align-items:flex-start;font-size:14px;color:#64748B;"><span style="color:#7C3AED;font-weight:700;min-width:20px;">01</span>To provide, operate, and maintain the Clickeros AI platform and all its features.</li>
+      <li style="display:flex;gap:10px;align-items:flex-start;font-size:14px;color:#64748B;"><span style="color:#7C3AED;font-weight:700;min-width:20px;">02</span>To process and generate AI-powered ad copy, SEO insights, and marketing recommendations.</li>
+      <li style="display:flex;gap:10px;align-items:flex-start;font-size:14px;color:#64748B;"><span style="color:#7C3AED;font-weight:700;min-width:20px;">03</span>To authenticate your identity and maintain secure login sessions across devices.</li>
+      <li style="display:flex;gap:10px;align-items:flex-start;font-size:14px;color:#64748B;"><span style="color:#7C3AED;font-weight:700;min-width:20px;">04</span>To send transactional notifications about your campaigns, billing, and account activity.</li>
+      <li style="display:flex;gap:10px;align-items:flex-start;font-size:14px;color:#64748B;"><span style="color:#7C3AED;font-weight:700;min-width:20px;">05</span>To analyze usage patterns and improve the app's features and performance.</li>
+      <li style="display:flex;gap:10px;align-items:flex-start;font-size:14px;color:#64748B;"><span style="color:#7C3AED;font-weight:700;min-width:20px;">06</span>To comply with legal obligations and enforce our Terms of Service.</li>
+      <li style="display:flex;gap:10px;align-items:flex-start;font-size:14px;color:#64748B;"><span style="color:#7C3AED;font-weight:700;min-width:20px;">07</span>To detect, prevent, and address fraud, security breaches, and technical issues.</li>
+    </ul>
+    <p style="margin-top:14px;">We do <strong>not</strong> sell your personal data to third parties, use it for behavioral advertising unrelated to our service, or share it with data brokers.</p>
+  </section>
+
+  <!-- ── 5. Data Retention ── -->
+  <section class="section" id="retention">
+    <div class="section-title">
+      <div class="accent-bar" style="background:#F59E0B;"></div>
+      <h2>5. Data Retention</h2>
+    </div>
+    <p>We retain your personal data for as long as your account is active or as needed to provide you services. Specific retention periods are as follows:</p>
+    <table class="data-table">
+      <thead>
+        <tr><th>Data Type</th><th>Retention Period</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Account &amp; Profile Data</td><td>Until account deletion + 30 days</td></tr>
+        <tr><td>Campaign Data &amp; Analytics</td><td>24 months from creation</td></tr>
+        <tr><td>Voice Audio Recordings</td><td>Deleted within 24 hours of transcription</td></tr>
+        <tr><td>Device Identifiers</td><td>Cleared on logout; maximum 12 months</td></tr>
+        <tr><td>Usage Logs</td><td>90 days (aggregated, anonymized)</td></tr>
+        <tr><td>Uploaded Media Files</td><td>Until you delete them or close your account</td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top:12px;">You may request deletion of your account and all associated data at any time by emailing <a href="mailto:privacy@clickeros.ai" style="color:#7C3AED;">privacy@clickeros.ai</a>. We will process deletion requests within 30 days.</p>
+  </section>
+
+  <!-- ── 6. Data Security ── -->
+  <section class="section" id="security">
+    <div class="section-title">
+      <div class="accent-bar" style="background:#22C55E;"></div>
+      <h2>6. Data Security</h2>
+    </div>
+    <p>We implement industry-standard security measures to protect your personal information, including:</p>
+    <ul style="list-style:none;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-top:10px;">
+      <li style="background:#F1F5F9;border-radius:10px;padding:12px;font-size:13px;color:#334155;"><strong>🔐 TLS/SSL Encryption</strong><br/>All data in transit is encrypted using TLS 1.3.</li>
+      <li style="background:#F1F5F9;border-radius:10px;padding:12px;font-size:13px;color:#334155;"><strong>🗄️ AES-256 at Rest</strong><br/>All stored data is encrypted with AES-256.</li>
+      <li style="background:#F1F5F9;border-radius:10px;padding:12px;font-size:13px;color:#334155;"><strong>🔍 Security Audits</strong><br/>Regular penetration testing and security reviews.</li>
+      <li style="background:#F1F5F9;border-radius:10px;padding:12px;font-size:13px;color:#334155;"><strong>👥 Access Controls</strong><br/>Strict employee access controls and audit logs.</li>
+    </ul>
+    <p style="margin-top:14px;">While we strive to protect your personal data, no method of transmission over the Internet is 100% secure. We cannot guarantee absolute security but commit to notifying you of any breach within 72 hours as required by applicable law.</p>
+  </section>
+
+  <!-- ── 7. Third-Party Services ── -->
+  <section class="section" id="third-party">
+    <div class="section-title">
+      <div class="accent-bar" style="background:#EC4899;"></div>
+      <h2>7. Third-Party Services</h2>
+    </div>
+    <p>The app integrates with the following third-party services. Each has its own privacy policy which we encourage you to review:</p>
+    <table class="data-table">
+      <thead>
+        <tr><th>Service</th><th>Purpose</th><th>Privacy Policy</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Google Sign-In</td><td>Authentication (GET_ACCOUNTS)</td><td><a href="https://policies.google.com/privacy" target="_blank" rel="noopener" style="color:#7C3AED;">policies.google.com</a></td></tr>
+        <tr><td>Facebook Ads API</td><td>Campaign management</td><td><a href="https://www.facebook.com/privacy/policy" target="_blank" rel="noopener" style="color:#7C3AED;">facebook.com/privacy</a></td></tr>
+        <tr><td>Google Ads API</td><td>Campaign management</td><td><a href="https://policies.google.com/privacy" target="_blank" rel="noopener" style="color:#7C3AED;">policies.google.com</a></td></tr>
+        <tr><td>TikTok Ads API</td><td>Campaign management</td><td><a href="https://www.tiktok.com/legal/page/us/privacy-policy/en" target="_blank" rel="noopener" style="color:#7C3AED;">tiktok.com/legal</a></td></tr>
+        <tr><td>Plausible Analytics</td><td>Anonymous usage analytics</td><td><a href="https://plausible.io/privacy" target="_blank" rel="noopener" style="color:#7C3AED;">plausible.io/privacy</a></td></tr>
+        <tr><td>Expo / EAS</td><td>App distribution &amp; push notifications</td><td><a href="https://expo.dev/privacy" target="_blank" rel="noopener" style="color:#7C3AED;">expo.dev/privacy</a></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ── 8. Children's Privacy ── -->
+  <section class="section" id="children">
+    <div class="section-title">
+      <div class="accent-bar" style="background:#F59E0B;"></div>
+      <h2>8. Children's Privacy</h2>
+    </div>
+    <p>The Clickeros AI app is not directed to children under the age of 13. We do not knowingly collect personally identifiable information from children under 13. If you are a parent or guardian and believe your child has provided us with personal data, please contact us immediately at <a href="mailto:privacy@clickeros.ai" style="color:#7C3AED;">privacy@clickeros.ai</a> so we can take the necessary actions to delete that information.</p>
+  </section>
+
+  <!-- ── 9. Your Rights ── -->
+  <section class="section" id="rights">
+    <div class="section-title">
+      <div class="accent-bar" style="background:#0EA5E9;"></div>
+      <h2>9. Your Privacy Rights</h2>
+    </div>
+    <p>Depending on your location (including GDPR for EU users and CCPA for California residents), you have the following rights regarding your personal data:</p>
+    <div class="rights-grid">
+      <div class="right-card"><div class="right-title">Access</div><p>Request a copy of the personal data we hold about you.</p></div>
+      <div class="right-card"><div class="right-title">Correction</div><p>Request correction of inaccurate or incomplete data.</p></div>
+      <div class="right-card"><div class="right-title">Deletion</div><p>Request deletion of your personal data (right to be forgotten).</p></div>
+      <div class="right-card"><div class="right-title">Portability</div><p>Request a machine-readable export of your data.</p></div>
+      <div class="right-card"><div class="right-title">Opt-Out</div><p>Opt out of non-essential data processing and marketing.</p></div>
+      <div class="right-card"><div class="right-title">Withdraw Consent</div><p>Revoke any permission via your device settings at any time.</p></div>
+    </div>
+    <p style="margin-top:14px;">To exercise any of these rights, contact us at <a href="mailto:privacy@clickeros.ai" style="color:#7C3AED;">privacy@clickeros.ai</a>. We will respond within 30 days.</p>
+  </section>
+
+  <!-- ── 10. Changes ── -->
+  <section class="section" id="changes">
+    <div class="section-title">
+      <div class="accent-bar" style="background:#64748B;"></div>
+      <h2>10. Changes to This Policy</h2>
+    </div>
+    <p>We may update this Privacy Policy from time to time. We will notify you of any material changes by posting the new Privacy Policy on this page and updating the "Last Updated" date at the top. For significant changes, we will provide a prominent in-app notification at least 30 days before the change takes effect.</p>
+    <p>We encourage you to review this Privacy Policy periodically. Continued use of the App after changes are posted constitutes your acceptance of the updated policy.</p>
+  </section>
+
+  <!-- ── 11. Contact ── -->
+  <section class="section" id="contact">
+    <div class="section-title">
+      <div class="accent-bar" style="background:#7C3AED;"></div>
+      <h2>11. Contact Us</h2>
+    </div>
+    <p>If you have any questions, concerns, or requests regarding this Privacy Policy or our data practices, please contact us:</p>
+    <div class="contact-box">
+      <div class="contact-row"><span class="contact-label">Company</span><span class="contact-value">Clickeros AI, Inc.</span></div>
+      <div class="contact-row"><span class="contact-label">Privacy Email</span><span class="contact-value"><a href="mailto:privacy@clickeros.ai">privacy@clickeros.ai</a></span></div>
+      <div class="contact-row"><span class="contact-label">Website</span><span class="contact-value"><a href="https://clickeros.ai" target="_blank" rel="noopener">https://clickeros.ai</a></span></div>
+      <div class="contact-row"><span class="contact-label">Data Controller</span><span class="contact-value">Clickeros AI, Inc.</span></div>
+      <div class="contact-row"><span class="contact-label">Response Time</span><span class="contact-value">Within 30 days of receiving your request</span></div>
+    </div>
+  </section>
+
+</div>
+
+<!-- ── Footer ── -->
+<footer class="footer">
+  <p>© 2026 Clickeros AI, Inc. All rights reserved. &nbsp;|&nbsp; <a href="https://clickeros.ai">clickeros.ai</a> &nbsp;|&nbsp; <a href="mailto:privacy@clickeros.ai">privacy@clickeros.ai</a></p>
+  <p style="margin-top:6px;font-size:12px;">This Privacy Policy is effective as of May 11, 2026 and governs the Clickeros AI mobile application on Android and iOS.</p>
+</footer>
+
+</body>
+</html>

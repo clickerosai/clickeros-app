@@ -72,3 +72,6 @@
 - [x] Declare all required Android permissions in app.config.ts
 - [x] Configure Android build for .aab format (Android App Bundle)
 - [x] Host Privacy Policy at public URL for Google Play Console submission
+
+## Public Web Privacy Policy
+- [x] Create public /privacy-policy web page (HTML, SEO-friendly, Google Play submittable)

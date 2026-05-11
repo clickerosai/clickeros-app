@@ -5,6 +5,7 @@ import net from "net";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerOAuthRoutes } from "./oauth";
 import { registerStorageProxy } from "./storageProxy";
+import { registerPrivacyPolicyRoute } from "./privacyPolicy";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 
@@ -61,6 +62,9 @@ async function startServer() {
   app.get("/api/health", (_req, res) => {
     res.json({ ok: true, timestamp: Date.now() });
   });
+
+  // Public Privacy Policy page — required for Google Play Console submission
+  registerPrivacyPolicyRoute(app);
 
   app.use(
     "/api/trpc",
