@@ -65,3 +65,10 @@
 - [x] Trend Radar screen
 - [x] Agency Mode screen
 - [x] Integrations screen
+
+## Privacy Policy & Google Play Compliance
+- [x] Create Privacy Policy screen (CAMERA, RECORD_AUDIO, READ_PHONE_STATE, GET_ACCOUNTS)
+- [x] Add Privacy Policy link to Settings screen
+- [x] Declare all required Android permissions in app.config.ts
+- [x] Configure Android build for .aab format (Android App Bundle)
+- [x] Host Privacy Policy at public URL for Google Play Console submission

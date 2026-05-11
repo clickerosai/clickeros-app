@@ -64,7 +64,17 @@ const config: ExpoConfig = {
     edgeToEdgeEnabled: true,
     predictiveBackGestureEnabled: false,
     package: env.androidPackage,
-    permissions: ["POST_NOTIFICATIONS"],
+    permissions: [
+      "POST_NOTIFICATIONS",
+      "CAMERA",
+      "RECORD_AUDIO",
+      "READ_PHONE_STATE",
+      "GET_ACCOUNTS",
+      "android.permission.CAMERA",
+      "android.permission.RECORD_AUDIO",
+      "android.permission.READ_PHONE_STATE",
+      "android.permission.GET_ACCOUNTS"
+    ],
     intentFilters: [
       {
         action: "VIEW",
@@ -87,9 +97,23 @@ const config: ExpoConfig = {
   plugins: [
     "expo-router",
     [
+      "expo-camera",
+      {
+        cameraPermission: "Allow $(PRODUCT_NAME) to access your camera to capture photos and videos for ad creatives and QR code scanning.",
+        microphonePermission: "Allow $(PRODUCT_NAME) to access your microphone for video recording and AI voice input features.",
+        recordAudioAndroid: true,
+      },
+    ],
+    [
       "expo-audio",
       {
-        microphonePermission: "Allow $(PRODUCT_NAME) to access your microphone.",
+        microphonePermission: "Allow $(PRODUCT_NAME) to access your microphone for AI voice dictation and video narration features.",
+      },
+    ],
+    [
+      "expo-contacts",
+      {
+        contactsPermission: "Allow $(PRODUCT_NAME) to access your contacts for account linking.",
       },
     ],
     [
@@ -117,6 +141,7 @@ const config: ExpoConfig = {
         android: {
           buildArchs: ["armeabi-v7a", "arm64-v8a"],
           minSdkVersion: 24,
+          targetSdkVersion: 34,
         },
       },
     ],
