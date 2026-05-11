@@ -80,3 +80,12 @@
 - [x] Create public /terms-of-service web page (HTML, Google Play / App Store submittable)
 - [x] Create in-app Terms of Service screen
 - [x] Link Terms of Service from Settings screen
+
+## Additional Legal Pages
+- [x] Cookie Policy page (/cookie-policy) — web + in-app
+- [x] Data Safety form page (/data-safety) — web + in-app
+- [x] CAMERA permission policy page (/permissions/camera) — web + in-app
+- [x] RECORD_AUDIO permission policy page (/permissions/record-audio) — web + in-app
+- [x] GET_ACCOUNTS permission policy page (/permissions/get-accounts) — web + in-app
+- [x] Register all new routes in Express server
+- [x] Add all new pages to Settings Legal section

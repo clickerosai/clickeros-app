@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>RECORD_AUDIO Permission Policy — Clickeros AI</title>
+  <meta name="description" content="Clickeros AI RECORD_AUDIO Permission Policy — How Clickeros AI uses the RECORD_AUDIO permission — purpose, data handling, and your controls."/>
+  <meta name="robots" content="index, follow"/>
+  <link rel="canonical" href="https://clickerosai-ay2ehjve.manus.space/permissions/record-audio"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --primary: #7C3AED; --primary-light: #EDE9FE;
+      --teal: #0EA5E9; --green: #22C55E; --amber: #F59E0B;
+      --red: #EF4444; --pink: #EC4899;
+      --slate-900: #0F172A; --slate-700: #334155; --slate-500: #64748B;
+      --slate-200: #E2E8F0; --slate-100: #F1F5F9; --white: #FFFFFF;
+    }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #F8FAFC; color: var(--slate-900); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+    .header { padding: 40px 24px 48px; text-align: center; position: relative; overflow: hidden; }
+    .header::before { content: ""; position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 70% 30%, rgba(255,255,255,0.08) 0%, transparent 60%); }
+    .header-badge { display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 999px; padding: 6px 14px; font-size: 12px; font-weight: 600;
+      color: #FFF; margin-bottom: 16px; letter-spacing: 0.5px; text-transform: uppercase; }
+    .header h1 { font-size: clamp(24px,5vw,38px); font-weight: 800; color: #FFF; margin-bottom: 10px; }
+    .header p { font-size: 15px; color: rgba(255,255,255,0.75); max-width: 540px; margin: 0 auto 18px; }
+    .header-meta { display: inline-flex; align-items: center; flex-wrap: wrap; justify-content: center;
+      gap: 14px; background: rgba(255,255,255,0.12); border-radius: 12px;
+      padding: 10px 20px; font-size: 13px; color: rgba(255,255,255,0.85); }
+    .container { max-width: 860px; margin: 0 auto; padding: 36px 24px 80px; }
+    .section { background: var(--white); border: 1px solid var(--slate-200); border-radius: 16px;
+      padding: 26px; margin-bottom: 18px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+    .section-title { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+    .section-title .bar { width: 4px; height: 22px; border-radius: 2px; flex-shrink: 0; }
+    .section-title h2 { font-size: 17px; font-weight: 700; color: var(--slate-900); }
+    .section p { font-size: 14px; color: var(--slate-500); margin-bottom: 10px; line-height: 1.75; }
+    .section p:last-child { margin-bottom: 0; }
+    .section p strong { color: var(--slate-900); }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 12px; }
+    th { background: var(--slate-100); padding: 10px 14px; text-align: left; font-weight: 700;
+      color: var(--slate-700); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+    th:first-child { border-radius: 8px 0 0 8px; } th:last-child { border-radius: 0 8px 8px 0; }
+    td { padding: 10px 14px; border-bottom: 1px solid var(--slate-200); color: var(--slate-500); vertical-align: top; }
+    tr:last-child td { border-bottom: none; } td:first-child { font-weight: 600; color: var(--slate-900); }
+    .highlight { border-radius: 12px; padding: 14px 16px; margin: 12px 0; font-size: 14px; line-height: 1.7; }
+    .highlight.warn { background: #FEF2F2; border: 1px solid #FECACA; color: #991B1B; }
+    .highlight.info { background: #EFF6FF; border: 1px solid #BFDBFE; color: #1E40AF; }
+    .highlight.ok   { background: #F0FDF4; border: 1px solid #BBF7D0; color: #166534; }
+    .highlight.amber{ background: #FFFBEB; border: 1px solid #FDE68A; color: #92400E; }
+    .contact-box { background: var(--primary-light); border: 1px solid rgba(124,58,237,0.2);
+      border-radius: 14px; padding: 18px; margin-top: 12px; }
+    .contact-row { display: flex; gap: 12px; margin-bottom: 8px; font-size: 14px; }
+    .contact-row:last-child { margin-bottom: 0; }
+    .contact-label { font-weight: 700; color: var(--primary); min-width: 130px; }
+    .contact-value { color: var(--slate-700); }
+    .contact-value a { color: var(--primary); text-decoration: none; }
+    .toc { background: var(--white); border: 1px solid var(--slate-200); border-radius: 16px;
+      padding: 22px; margin-bottom: 28px; }
+    .toc h2 { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px;
+      color: var(--slate-500); margin-bottom: 12px; }
+    .toc ol { list-style: none; display: grid; grid-template-columns: repeat(auto-fill,minmax(220px,1fr)); gap: 5px; }
+    .toc li a { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--primary);
+      text-decoration: none; padding: 6px 10px; border-radius: 8px; transition: background 0.15s; }
+    .toc li a:hover { background: var(--primary-light); }
+    .toc li a::before { content: attr(data-num); font-weight: 700; font-size: 11px;
+      color: var(--slate-500); min-width: 20px; }
+    .perm-card { border: 1px solid var(--slate-200); border-radius: 14px; padding: 18px;
+      margin-bottom: 14px; border-left-width: 4px; }
+    .perm-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+    .perm-icon { width: 42px; height: 42px; border-radius: 12px; display: flex;
+      align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+    .perm-name { font-size: 15px; font-weight: 700; color: var(--slate-900); margin-bottom: 3px; }
+    .perm-badge { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 7px;
+      border-radius: 4px; text-transform: uppercase; letter-spacing: 0.4px; }
+    .perm-row { display: grid; grid-template-columns: 110px 1fr; gap: 6px; margin-bottom: 8px; font-size: 13px; }
+    .perm-label { font-weight: 600; color: var(--slate-900); }
+    .perm-value { color: var(--slate-500); line-height: 1.6; }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+    .badge-green { background: #DCFCE7; color: #16A34A; }
+    .badge-red   { background: #FEE2E2; color: #DC2626; }
+    .badge-amber { background: #FEF3C7; color: #D97706; }
+    .footer { text-align: center; padding: 28px 24px; border-top: 1px solid var(--slate-200);
+      font-size: 13px; color: var(--slate-500); background: var(--white); }
+    .footer a { color: var(--primary); text-decoration: none; }
+    .footer-links { display: flex; justify-content: center; gap: 18px; margin-top: 8px; flex-wrap: wrap; }
+    @media(max-width:640px){ .toc ol { grid-template-columns:1fr; }
+      .perm-row { grid-template-columns:1fr; gap:2px; }
+      .perm-label { font-size:11px; text-transform:uppercase; color:var(--slate-500); } }
+</style>
+</head>
+<body>
+<header class="header" style="background:linear-gradient(135deg,#831843 0%,#BE185D 100%);">
+  <div class="header-badge">RECORD_AUDIO Permission</div>
+  <h1>Clickeros AI<br/>RECORD_AUDIO Permission Policy</h1>
+  <p>How Clickeros AI uses the RECORD_AUDIO permission — purpose, data handling, and your controls.</p>
+  <div class="header-meta">
+    <span>Effective: May 11, 2026</span>
+    <span>Clickeros AI, Inc.</span>
+  </div>
+</header>
+<div class="container">
+
+<section class="section">
+  <div class="section-title"><div class="bar" style="background:#EC4899;"></div><h2>Permission Overview</h2></div>
+  <div class="perm-card" style="border-left-color:#EC4899;">
+    <div class="perm-header">
+      <div class="perm-icon" style="background:#FCE7F3;">🎙️</div>
+      <div>
+        <div class="perm-name">RECORD_AUDIO</div>
+        <span class="perm-badge" style="background:#FCE7F3;color:#EC4899;">android.permission.RECORD_AUDIO</span>
+      </div>
+    </div>
+    <div class="perm-row"><span class="perm-label">Permission Type</span><span class="perm-value">Dangerous — requires explicit user grant</span></div>
+    <div class="perm-row"><span class="perm-label">Required?</span><span class="perm-value">Optional — app functions without it; only needed for voice input features</span></div>
+    <div class="perm-row"><span class="perm-label">When Requested</span><span class="perm-value">Only when you tap the microphone icon to use voice dictation or voice-to-text features</span></div>
+    <div class="perm-row"><span class="perm-label">Background Access</span><span class="perm-value">Never — microphone only active during an explicit voice recording session you start</span></div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-title"><div class="bar" style="background:#0EA5E9;"></div><h2>Why We Need This Permission</h2></div>
+  <table><thead><tr><th>Feature</th><th>Audio Use</th><th>Data Stored?</th></tr></thead><tbody>
+      <tr><td>AI Strategy Copilot</td><td>Dictate campaign briefs and marketing goals by voice</td><td>Transcribed text stored; raw audio deleted within 24h</td></tr>
+      <tr><td>AI Ads Creator</td><td>Describe your product and audience by voice to generate ad copy</td><td>Transcribed text stored; raw audio deleted</td></tr>
+      <tr><td>AI Video Generator</td><td>Record a voice narration for AI-generated video ads</td><td>Audio stored as video asset until you delete it</td></tr>
+    </tbody></table>
+</section>
+
+<section class="section">
+  <div class="section-title"><div class="bar" style="background:#22C55E;"></div><h2>Data Handling</h2></div>
+  <table><thead><tr><th>Aspect</th><th>Details</th></tr></thead><tbody>
+      <tr><td>Data Collected</td><td>Audio captured only when you actively start a recording by tapping the microphone button</td></tr>
+      <tr><td>Transmission</td><td>Audio streamed over TLS 1.3 encrypted connection to our AI transcription service</td></tr>
+      <tr><td>Raw Audio Retention</td><td><strong>Deleted within 24 hours</strong> of transcription completion (except video narration assets)</td></tr>
+      <tr><td>Transcribed Text</td><td>Stored as campaign history until you delete it or close your account</td></tr>
+      <tr><td>Shared With</td><td>Our internal AI transcription service only. Never sold or shared with third parties.</td></tr>
+      <tr><td>Encryption</td><td>TLS 1.3 in transit; AES-256 at rest for stored transcriptions</td></tr>
+    </tbody></table>
+  <div class="highlight ok" style="margin-top:14px;"><strong>No background access.</strong> This permission is only activated during an explicit action you initiate within the app.</div>
+  <div class="highlight warn" style="margin-top:10px;"><strong>Important:</strong> Do not use voice input in public places where others may be recorded without their consent. You are responsible for complying with applicable recording laws in your jurisdiction.</div>
+</section>
+
+<section class="section">
+  <div class="section-title"><div class="bar" style="background:#F59E0B;"></div><h2>How to Revoke This Permission</h2></div>
+  <p><strong>Android:</strong> Settings &rarr; Apps &rarr; Clickeros AI &rarr; Permissions &rarr; Microphone &rarr; Deny.</p>
+  <p><strong>iOS:</strong> Settings &rarr; Clickeros AI &rarr; Microphone &rarr; Toggle off.</p>
+</section>
+
+<section class="section">
+  <div class="section-title"><div class="bar" style="background:#EC4899;"></div><h2>Contact</h2></div>
+  <p>Questions about this permission? Contact <a href="mailto:privacy@clickeros.ai" style="color:#7C3AED;">privacy@clickeros.ai</a> or view our <a href="/privacy-policy" style="color:#7C3AED;">Privacy Policy</a>.</p>
+</section>
+
+</div>
+<footer class="footer">
+  <p>2026 Clickeros AI, Inc. All rights reserved.</p>
+  <div class="footer-links">
+    <a href="/privacy-policy">Privacy Policy</a>
+    <a href="/terms-of-service">Terms of Service</a>
+    <a href="/cookie-policy">Cookie Policy</a>
+    <a href="/data-safety">Data Safety</a>
+    <a href="mailto:privacy@clickeros.ai">privacy@clickeros.ai</a>
+  </div>
+</footer>
+</body>
+</html>

@@ -33,7 +33,9 @@ const SETTINGS_SECTIONS = [
     items: [
       { label: "Privacy Policy", desc: "How we collect and use your data", icon: "🔐", route: "/privacy-policy" },
       { label: "Terms of Service", desc: "Terms governing use of Clickeros AI", icon: "📄", route: "/terms-of-service" },
-      { label: "Data & Permissions", desc: "Manage app permissions and data access", icon: "🛡️", route: "/privacy-policy" },
+      { label: "Cookie Policy", desc: "Cookies and tracking technologies", icon: "🍪", route: "/cookie-policy" },
+      { label: "Data Safety", desc: "Google Play data safety information", icon: "🛡️", route: "/data-safety" },
+      { label: "All Legal Documents", desc: "Privacy, permissions, and compliance hub", icon: "⚖️", route: "/legal" },
     ],
   },
 ];
