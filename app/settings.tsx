@@ -2,6 +2,7 @@ import { ScrollView, Text, View, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
 import { useColors } from "@/hooks/use-colors";
+import { useResponsive } from "@/hooks/use-responsive";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 
 const SETTINGS_SECTIONS = [
@@ -43,39 +44,51 @@ const SETTINGS_SECTIONS = [
 export default function SettingsScreen() {
   const router = useRouter();
   const colors = useColors();
+  const r = useResponsive();
 
   return (
     <ScreenContainer>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 32 }}>
         {/* Header */}
-        <View style={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 16, borderBottomWidth: 1, borderBottomColor: colors.border }}>
+        <View style={{
+          paddingHorizontal: r.px, paddingTop: 16, paddingBottom: 16,
+          borderBottomWidth: 1, borderBottomColor: colors.border,
+        }}>
           <TouchableOpacity
-            style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 12 }}
+            style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 12, minHeight: 44 }}
             onPress={() => router.back()}
             activeOpacity={0.7}
           >
             <IconSymbol name="chevron.left" size={18} color={colors.muted} />
-            <Text style={{ color: colors.muted, fontSize: 14 }}>Back</Text>
+            <Text style={{ color: colors.muted, fontSize: r.fontSize.base }}>Back</Text>
           </TouchableOpacity>
-          <Text style={{ color: colors.foreground, fontSize: 22, fontWeight: "700" }}>Settings</Text>
-          <Text style={{ color: colors.muted, fontSize: 14, marginTop: 4 }}>Manage your account and preferences</Text>
+          <Text style={{ color: colors.foreground, fontSize: r.fontSize["2xl"], fontWeight: "700" }}>Settings</Text>
+          <Text style={{ color: colors.muted, fontSize: r.fontSize.base, marginTop: 4 }}>
+            Manage your account and preferences
+          </Text>
         </View>
 
         {/* Settings Sections */}
         {SETTINGS_SECTIONS.map((section) => (
-          <View key={section.title} style={{ paddingHorizontal: 16, marginTop: 20 }}>
-            <Text style={{ color: colors.muted, fontSize: 12, fontWeight: "700", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 8 }}>
+          <View key={section.title} style={{ paddingHorizontal: r.px, marginTop: 20 }}>
+            <Text style={{
+              color: colors.muted, fontSize: r.fontSize.xs,
+              fontWeight: "700", textTransform: "uppercase",
+              letterSpacing: 0.8, marginBottom: 8,
+            }}>
               {section.title}
             </Text>
-            <View style={{ backgroundColor: colors.background, borderRadius: 16, borderWidth: 1, borderColor: colors.border, overflow: "hidden" }}>
+            <View style={{
+              backgroundColor: colors.background, borderRadius: 16,
+              borderWidth: 1, borderColor: colors.border, overflow: "hidden",
+            }}>
               {section.items.map((item, idx) => (
                 <TouchableOpacity
                   key={item.label}
                   style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    paddingHorizontal: 16,
-                    paddingVertical: 14,
+                    flexDirection: "row", alignItems: "center",
+                    paddingHorizontal: r.isXs ? 14 : 16,
+                    minHeight: 56,
                     borderTopWidth: idx > 0 ? 1 : 0,
                     borderTopColor: colors.border,
                     gap: 12,
@@ -83,52 +96,63 @@ export default function SettingsScreen() {
                   onPress={() => item.route && router.push(item.route as any)}
                   activeOpacity={item.route ? 0.7 : 1}
                 >
-                  <View style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: colors.surface, alignItems: "center", justifyContent: "center" }}>
+                  <View style={{
+                    width: 36, height: 36, borderRadius: 10,
+                    backgroundColor: colors.surface,
+                    alignItems: "center", justifyContent: "center",
+                    flexShrink: 0,
+                  }}>
                     <Text style={{ fontSize: 18 }}>{item.icon}</Text>
                   </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "600" }}>{item.label}</Text>
-                    <Text style={{ color: colors.muted, fontSize: 12, marginTop: 1 }}>{item.desc}</Text>
+                  <View style={{ flex: 1, minWidth: 0 }}>
+                    <Text style={{ color: colors.foreground, fontSize: r.fontSize.base, fontWeight: "600" }} numberOfLines={1}>
+                      {item.label}
+                    </Text>
+                    <Text style={{ color: colors.muted, fontSize: r.fontSize.xs, marginTop: 1 }} numberOfLines={1}>
+                      {item.desc}
+                    </Text>
                   </View>
-                  {item.route && <IconSymbol name="chevron.right" size={16} color={colors.muted} />}
+                  {item.route && (
+                    <IconSymbol name="chevron.right" size={16} color={colors.muted} style={{ flexShrink: 0 }} />
+                  )}
                 </TouchableOpacity>
               ))}
             </View>
           </View>
         ))}
 
-        {/* Privacy Policy Highlight Card */}
-        <View style={{ marginHorizontal: 16, marginTop: 20 }}>
+        {/* Privacy Policy Highlight */}
+        <View style={{ marginHorizontal: r.px, marginTop: 20 }}>
           <TouchableOpacity
             style={{
-              backgroundColor: "#7C3AED10",
-              borderRadius: 16,
-              padding: 16,
-              borderWidth: 1,
-              borderColor: "#7C3AED30",
-              flexDirection: "row",
-              alignItems: "center",
-              gap: 12,
+              backgroundColor: "#7C3AED10", borderRadius: 16, padding: r.isXs ? 14 : 16,
+              borderWidth: 1, borderColor: "#7C3AED30",
+              flexDirection: "row", alignItems: "center", gap: 12,
+              minHeight: 56,
             }}
-            onPress={() => router.push("/privacy-policy" as any)}
+            onPress={() => router.push("/legal" as any)}
             activeOpacity={0.7}
           >
-            <View style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: "#7C3AED20", alignItems: "center", justifyContent: "center" }}>
+            <View style={{
+              width: 44, height: 44, borderRadius: 12,
+              backgroundColor: "#7C3AED20", alignItems: "center", justifyContent: "center",
+              flexShrink: 0,
+            }}>
               <IconSymbol name="lock.fill" size={22} color="#7C3AED" />
             </View>
-            <View style={{ flex: 1 }}>
-              <Text style={{ color: "#7C3AED", fontSize: 14, fontWeight: "700" }}>Privacy Policy</Text>
-              <Text style={{ color: colors.muted, fontSize: 12, marginTop: 2 }}>
-                CAMERA · RECORD_AUDIO · READ_PHONE_STATE · GET_ACCOUNTS
+            <View style={{ flex: 1, minWidth: 0 }}>
+              <Text style={{ color: "#7C3AED", fontSize: r.fontSize.base, fontWeight: "700" }}>Legal & Privacy Hub</Text>
+              <Text style={{ color: colors.muted, fontSize: r.fontSize.xs, marginTop: 2 }} numberOfLines={1}>
+                Privacy · Terms · Cookies · Data Safety · Permissions
               </Text>
             </View>
-            <IconSymbol name="chevron.right" size={16} color="#7C3AED" />
+            <IconSymbol name="chevron.right" size={16} color="#7C3AED" style={{ flexShrink: 0 }} />
           </TouchableOpacity>
         </View>
 
         {/* Footer */}
-        <View style={{ marginHorizontal: 16, marginTop: 24, alignItems: "center" }}>
-          <Text style={{ color: colors.muted, fontSize: 12, textAlign: "center", lineHeight: 18 }}>
+        <View style={{ marginHorizontal: r.px, marginTop: 24, alignItems: "center" }}>
+          <Text style={{ color: colors.muted, fontSize: r.fontSize.xs, textAlign: "center", lineHeight: 18 }}>
             Clickeros AI v1.0.0{"\n"}© 2026 Clickeros AI, Inc.
           </Text>
         </View>

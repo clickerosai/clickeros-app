@@ -2,6 +2,7 @@ import { ScrollView, Text, View, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
 import { useColors } from "@/hooks/use-colors";
+import { useResponsive } from "@/hooks/use-responsive";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 
 const NAV_SECTIONS = [
@@ -89,6 +90,7 @@ const NAV_SECTIONS = [
       { label: "Settings", route: "/settings", icon: "gear" as const, desc: "Account settings" },
       { label: "Billing & Plans", route: "/billing", icon: "creditcard.fill" as const, desc: "Subscription management" },
       { label: "Pricing", route: "/pricing", icon: "tag.fill" as const, desc: "View all plans" },
+      { label: "Legal & Privacy", route: "/legal", icon: "lock.fill" as const, desc: "Privacy, terms, permissions" },
     ],
   },
 ];
@@ -96,34 +98,45 @@ const NAV_SECTIONS = [
 export default function MoreScreen() {
   const router = useRouter();
   const colors = useColors();
+  const r = useResponsive();
 
   return (
     <ScreenContainer>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 32 }}>
         {/* Header */}
-        <View style={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 16, borderBottomWidth: 1, borderBottomColor: colors.border }}>
-          <Text style={{ color: colors.foreground, fontSize: 22, fontWeight: "700" }}>All Features</Text>
-          <Text style={{ color: colors.muted, fontSize: 14, marginTop: 4 }}>Explore all Clickeros AI tools</Text>
+        <View style={{
+          paddingHorizontal: r.px, paddingTop: 16, paddingBottom: 16,
+          borderBottomWidth: 1, borderBottomColor: colors.border,
+        }}>
+          <Text style={{ color: colors.foreground, fontSize: r.fontSize["2xl"], fontWeight: "700" }}>All Features</Text>
+          <Text style={{ color: colors.muted, fontSize: r.fontSize.base, marginTop: 4 }}>
+            Explore all Clickeros AI tools
+          </Text>
         </View>
 
         {NAV_SECTIONS.map((section) => (
-          <View key={section.title} style={{ paddingHorizontal: 16, marginTop: 20 }}>
+          <View key={section.title} style={{ paddingHorizontal: r.px, marginTop: 20 }}>
             {/* Section Header */}
             <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 10 }}>
               <View style={{ width: 4, height: 18, borderRadius: 2, backgroundColor: section.color }} />
-              <Text style={{ color: colors.foreground, fontSize: 15, fontWeight: "700" }}>{section.title}</Text>
+              <Text style={{ color: colors.foreground, fontSize: r.fontSize.md, fontWeight: "700" }}>
+                {section.title}
+              </Text>
             </View>
 
             {/* Section Items */}
-            <View style={{ backgroundColor: colors.background, borderRadius: 16, borderWidth: 1, borderColor: colors.border, overflow: "hidden" }}>
+            <View style={{
+              backgroundColor: colors.background,
+              borderRadius: 16, borderWidth: 1,
+              borderColor: colors.border, overflow: "hidden",
+            }}>
               {section.items.map((item, idx) => (
                 <TouchableOpacity
                   key={item.label}
                   style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    paddingHorizontal: 16,
-                    paddingVertical: 13,
+                    flexDirection: "row", alignItems: "center",
+                    paddingHorizontal: r.isXs ? 14 : 16,
+                    minHeight: 56,
                     borderTopWidth: idx > 0 ? 1 : 0,
                     borderTopColor: colors.border,
                     gap: 12,
@@ -131,14 +144,23 @@ export default function MoreScreen() {
                   onPress={() => router.push(item.route as any)}
                   activeOpacity={0.7}
                 >
-                  <View style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: `${section.color}15`, alignItems: "center", justifyContent: "center" }}>
+                  <View style={{
+                    width: 36, height: 36, borderRadius: 10,
+                    backgroundColor: `${section.color}15`,
+                    alignItems: "center", justifyContent: "center",
+                    flexShrink: 0,
+                  }}>
                     <IconSymbol name={item.icon} size={18} color={section.color} />
                   </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "600" }}>{item.label}</Text>
-                    <Text style={{ color: colors.muted, fontSize: 12, marginTop: 1 }}>{item.desc}</Text>
+                  <View style={{ flex: 1, minWidth: 0 }}>
+                    <Text style={{ color: colors.foreground, fontSize: r.fontSize.base, fontWeight: "600" }} numberOfLines={1}>
+                      {item.label}
+                    </Text>
+                    <Text style={{ color: colors.muted, fontSize: r.fontSize.xs, marginTop: 1 }} numberOfLines={1}>
+                      {item.desc}
+                    </Text>
                   </View>
-                  <IconSymbol name="chevron.right" size={16} color={colors.muted} />
+                  <IconSymbol name="chevron.right" size={16} color={colors.muted} style={{ flexShrink: 0 }} />
                 </TouchableOpacity>
               ))}
             </View>

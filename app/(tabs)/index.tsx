@@ -1,7 +1,8 @@
-import { ScrollView, Text, View, TouchableOpacity, FlatList } from "react-native";
+import { ScrollView, Text, View, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
 import { useColors } from "@/hooks/use-colors";
+import { useResponsive } from "@/hooks/use-responsive";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 
 const STATS = [
@@ -28,44 +29,59 @@ const RECENT_CAMPAIGNS = [
 export default function DashboardScreen() {
   const router = useRouter();
   const colors = useColors();
+  const r = useResponsive();
 
   return (
     <ScreenContainer>
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 24 }}
+        contentContainerStyle={{ paddingBottom: 32 }}
+        overScrollMode="never"
       >
         {/* Header */}
-        <View style={{ backgroundColor: "#7C3AED", paddingHorizontal: 20, paddingTop: 20, paddingBottom: 28 }}>
+        <View style={{
+          backgroundColor: "#7C3AED",
+          paddingHorizontal: r.px,
+          paddingTop: 20,
+          paddingBottom: 28,
+        }}>
           <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
-            <View>
-              <Text style={{ color: "rgba(255,255,255,0.7)", fontSize: 13, fontWeight: "500" }}>Welcome back 👋</Text>
-              <Text style={{ color: "#FFFFFF", fontSize: 22, fontWeight: "700", marginTop: 2 }}>Clickeros Dashboard</Text>
+            <View style={{ flex: 1, marginRight: 12 }}>
+              <Text style={{ color: "rgba(255,255,255,0.75)", fontSize: r.fontSize.sm, fontWeight: "500" }}>
+                Welcome back 👋
+              </Text>
+              <Text style={{ color: "#FFFFFF", fontSize: r.fontSize["2xl"], fontWeight: "700", marginTop: 2 }} numberOfLines={1}>
+                Clickeros Dashboard
+              </Text>
             </View>
             <TouchableOpacity
-              style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: "rgba(255,255,255,0.2)", alignItems: "center", justifyContent: "center" }}
+              style={{
+                width: 44, height: 44, borderRadius: 22,
+                backgroundColor: "rgba(255,255,255,0.2)",
+                alignItems: "center", justifyContent: "center",
+              }}
               onPress={() => router.push("/settings" as any)}
+              activeOpacity={0.7}
             >
               <IconSymbol name="bell.fill" size={20} color="#FFFFFF" />
             </TouchableOpacity>
           </View>
-          <Text style={{ color: "rgba(255,255,255,0.7)", fontSize: 13, marginTop: 8 }}>
+          <Text style={{ color: "rgba(255,255,255,0.7)", fontSize: r.fontSize.sm, marginTop: 6 }}>
             Turn Content Into Revenue — Automatically
           </Text>
         </View>
 
-        {/* Stats Cards */}
-        <View style={{ paddingHorizontal: 16, marginTop: -16 }}>
+        {/* Stats Cards — 2-column grid, responsive */}
+        <View style={{ paddingHorizontal: r.px, marginTop: -16 }}>
           <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
             {STATS.map((stat) => (
               <View
                 key={stat.label}
                 style={{
-                  flex: 1,
-                  minWidth: "45%",
+                  width: r.statCardWidth,
                   backgroundColor: colors.background,
                   borderRadius: 16,
-                  padding: 14,
+                  padding: r.isXs ? 12 : 14,
                   shadowColor: "#000",
                   shadowOffset: { width: 0, height: 2 },
                   shadowOpacity: 0.08,
@@ -73,26 +89,37 @@ export default function DashboardScreen() {
                   elevation: 3,
                   borderWidth: 1,
                   borderColor: colors.border,
+                  overflow: "hidden",
                 }}
               >
                 <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
-                  <View style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: `${stat.color}15`, alignItems: "center", justifyContent: "center" }}>
-                    <IconSymbol name={stat.icon} size={18} color={stat.color} />
+                  <View style={{
+                    width: 34, height: 34, borderRadius: 10,
+                    backgroundColor: `${stat.color}15`,
+                    alignItems: "center", justifyContent: "center",
+                  }}>
+                    <IconSymbol name={stat.icon} size={17} color={stat.color} />
                   </View>
-                  <View style={{ backgroundColor: "#DCFCE7", borderRadius: 8, paddingHorizontal: 6, paddingVertical: 2 }}>
-                    <Text style={{ color: "#16A34A", fontSize: 11, fontWeight: "600" }}>{stat.change}</Text>
+                  <View style={{ backgroundColor: "#DCFCE7", borderRadius: 6, paddingHorizontal: 5, paddingVertical: 2 }}>
+                    <Text style={{ color: "#16A34A", fontSize: r.fontSize.xs, fontWeight: "600" }}>{stat.change}</Text>
                   </View>
                 </View>
-                <Text style={{ color: colors.foreground, fontSize: 22, fontWeight: "700", marginTop: 10 }}>{stat.value}</Text>
-                <Text style={{ color: colors.muted, fontSize: 12, marginTop: 2 }}>{stat.label}</Text>
+                <Text style={{ color: colors.foreground, fontSize: r.isXs ? 18 : 22, fontWeight: "700", marginTop: 8 }} numberOfLines={1}>
+                  {stat.value}
+                </Text>
+                <Text style={{ color: colors.muted, fontSize: r.fontSize.xs, marginTop: 2 }} numberOfLines={1}>
+                  {stat.label}
+                </Text>
               </View>
             ))}
           </View>
         </View>
 
         {/* Quick Actions */}
-        <View style={{ paddingHorizontal: 16, marginTop: 20 }}>
-          <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "700", marginBottom: 12 }}>Quick Actions</Text>
+        <View style={{ paddingHorizontal: r.px, marginTop: 20 }}>
+          <Text style={{ color: colors.foreground, fontSize: r.fontSize.lg, fontWeight: "700", marginBottom: 12 }}>
+            Quick Actions
+          </Text>
           <View style={{ flexDirection: "row", gap: 10 }}>
             {QUICK_ACTIONS.map((action) => (
               <TouchableOpacity
@@ -101,49 +128,86 @@ export default function DashboardScreen() {
                   flex: 1,
                   backgroundColor: colors.surface,
                   borderRadius: 14,
-                  padding: 12,
+                  padding: r.isXs ? 10 : 12,
                   alignItems: "center",
                   borderWidth: 1,
                   borderColor: colors.border,
+                  minHeight: 44,
                 }}
                 onPress={() => router.push(action.route as any)}
                 activeOpacity={0.7}
               >
-                <View style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: `${action.color}15`, alignItems: "center", justifyContent: "center", marginBottom: 6 }}>
-                  <IconSymbol name={action.icon} size={20} color={action.color} />
+                <View style={{
+                  width: 38, height: 38, borderRadius: 10,
+                  backgroundColor: `${action.color}15`,
+                  alignItems: "center", justifyContent: "center",
+                  marginBottom: 5,
+                }}>
+                  <IconSymbol name={action.icon} size={18} color={action.color} />
                 </View>
-                <Text style={{ color: colors.foreground, fontSize: 11, fontWeight: "600", textAlign: "center" }}>{action.label}</Text>
+                <Text style={{ color: colors.foreground, fontSize: r.fontSize.xs, fontWeight: "600", textAlign: "center" }} numberOfLines={2}>
+                  {action.label}
+                </Text>
               </TouchableOpacity>
             ))}
           </View>
         </View>
 
         {/* AI Insight Banner */}
-        <View style={{ marginHorizontal: 16, marginTop: 20, borderRadius: 16, overflow: "hidden" }}>
-          <View style={{ backgroundColor: "#7C3AED", padding: 16, flexDirection: "row", alignItems: "center", gap: 12 }}>
-            <View style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: "rgba(255,255,255,0.2)", alignItems: "center", justifyContent: "center" }}>
-              <IconSymbol name="sparkles" size={22} color="#FFFFFF" />
+        <View style={{ marginHorizontal: r.px, marginTop: 20, borderRadius: 16, overflow: "hidden" }}>
+          <View style={{
+            backgroundColor: "#7C3AED",
+            padding: r.isXs ? 14 : 16,
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 12,
+          }}>
+            <View style={{
+              width: 42, height: 42, borderRadius: 12,
+              backgroundColor: "rgba(255,255,255,0.2)",
+              alignItems: "center", justifyContent: "center",
+              flexShrink: 0,
+            }}>
+              <IconSymbol name="sparkles" size={20} color="#FFFFFF" />
             </View>
-            <View style={{ flex: 1 }}>
-              <Text style={{ color: "#FFFFFF", fontSize: 14, fontWeight: "700" }}>AI Strategy Copilot</Text>
-              <Text style={{ color: "rgba(255,255,255,0.8)", fontSize: 12, marginTop: 2 }}>3 new growth opportunities detected this week</Text>
+            <View style={{ flex: 1, minWidth: 0 }}>
+              <Text style={{ color: "#FFFFFF", fontSize: r.fontSize.base, fontWeight: "700" }} numberOfLines={1}>
+                AI Strategy Copilot
+              </Text>
+              <Text style={{ color: "rgba(255,255,255,0.8)", fontSize: r.fontSize.xs, marginTop: 2 }} numberOfLines={2}>
+                3 new growth opportunities detected this week
+              </Text>
             </View>
             <TouchableOpacity
-              style={{ backgroundColor: "rgba(255,255,255,0.2)", borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6 }}
+              style={{
+                backgroundColor: "rgba(255,255,255,0.2)",
+                borderRadius: 8,
+                paddingHorizontal: 10,
+                paddingVertical: 8,
+                minHeight: 44,
+                justifyContent: "center",
+                flexShrink: 0,
+              }}
               onPress={() => router.push("/strategy-copilot" as any)}
               activeOpacity={0.7}
             >
-              <Text style={{ color: "#FFFFFF", fontSize: 12, fontWeight: "600" }}>View</Text>
+              <Text style={{ color: "#FFFFFF", fontSize: r.fontSize.sm, fontWeight: "600" }}>View</Text>
             </TouchableOpacity>
           </View>
         </View>
 
         {/* Recent Campaigns */}
-        <View style={{ paddingHorizontal: 16, marginTop: 20 }}>
+        <View style={{ paddingHorizontal: r.px, marginTop: 20 }}>
           <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-            <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "700" }}>Recent Campaigns</Text>
-            <TouchableOpacity onPress={() => router.push("/campaigns" as any)} activeOpacity={0.7}>
-              <Text style={{ color: "#7C3AED", fontSize: 13, fontWeight: "600" }}>See All</Text>
+            <Text style={{ color: colors.foreground, fontSize: r.fontSize.lg, fontWeight: "700" }}>
+              Recent Campaigns
+            </Text>
+            <TouchableOpacity
+              onPress={() => router.push("/campaigns" as any)}
+              activeOpacity={0.7}
+              style={{ minHeight: 44, justifyContent: "center", paddingLeft: 8 }}
+            >
+              <Text style={{ color: "#7C3AED", fontSize: r.fontSize.sm, fontWeight: "600" }}>See All</Text>
             </TouchableOpacity>
           </View>
           {RECENT_CAMPAIGNS.map((campaign) => (
@@ -152,52 +216,76 @@ export default function DashboardScreen() {
               style={{
                 backgroundColor: colors.background,
                 borderRadius: 14,
-                padding: 14,
+                padding: r.isXs ? 12 : 14,
                 marginBottom: 10,
                 borderWidth: 1,
                 borderColor: colors.border,
                 flexDirection: "row",
                 alignItems: "center",
                 gap: 12,
+                minHeight: 44,
               }}
               onPress={() => router.push("/campaigns" as any)}
               activeOpacity={0.7}
             >
-              <View style={{ width: 42, height: 42, borderRadius: 12, backgroundColor: `${campaign.color}15`, alignItems: "center", justifyContent: "center" }}>
-                <IconSymbol name="megaphone.fill" size={20} color={campaign.color} />
+              <View style={{
+                width: 40, height: 40, borderRadius: 12,
+                backgroundColor: `${campaign.color}15`,
+                alignItems: "center", justifyContent: "center",
+                flexShrink: 0,
+              }}>
+                <IconSymbol name="megaphone.fill" size={18} color={campaign.color} />
               </View>
-              <View style={{ flex: 1 }}>
-                <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "600" }}>{campaign.name}</Text>
-                <Text style={{ color: colors.muted, fontSize: 12, marginTop: 2 }}>{campaign.platform} • Spend: {campaign.spend}</Text>
+              <View style={{ flex: 1, minWidth: 0 }}>
+                <Text style={{ color: colors.foreground, fontSize: r.fontSize.base, fontWeight: "600" }} numberOfLines={1}>
+                  {campaign.name}
+                </Text>
+                <Text style={{ color: colors.muted, fontSize: r.fontSize.xs, marginTop: 2 }} numberOfLines={1}>
+                  {campaign.platform} · Spend: {campaign.spend}
+                </Text>
               </View>
-              <View style={{ alignItems: "flex-end" }}>
+              <View style={{ alignItems: "flex-end", flexShrink: 0 }}>
                 <View style={{
                   backgroundColor: campaign.status === "Active" ? "#DCFCE7" : "#FEF9C3",
-                  borderRadius: 6,
-                  paddingHorizontal: 8,
-                  paddingVertical: 3,
-                  marginBottom: 4,
+                  borderRadius: 6, paddingHorizontal: 7, paddingVertical: 3, marginBottom: 4,
                 }}>
-                  <Text style={{ color: campaign.status === "Active" ? "#16A34A" : "#CA8A04", fontSize: 11, fontWeight: "600" }}>{campaign.status}</Text>
+                  <Text style={{
+                    color: campaign.status === "Active" ? "#16A34A" : "#CA8A04",
+                    fontSize: r.fontSize.xs, fontWeight: "600",
+                  }}>
+                    {campaign.status}
+                  </Text>
                 </View>
-                <Text style={{ color: colors.foreground, fontSize: 13, fontWeight: "700" }}>ROAS {campaign.roas}</Text>
+                <Text style={{ color: colors.foreground, fontSize: r.fontSize.sm, fontWeight: "700" }}>
+                  ROAS {campaign.roas}
+                </Text>
               </View>
             </TouchableOpacity>
           ))}
         </View>
 
-        {/* Stats Banner */}
-        <View style={{ marginHorizontal: 16, marginTop: 20, backgroundColor: colors.surface, borderRadius: 16, padding: 16, borderWidth: 1, borderColor: colors.border }}>
-          <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "700", marginBottom: 12 }}>Platform Stats</Text>
+        {/* Platform Stats */}
+        <View style={{
+          marginHorizontal: r.px,
+          marginTop: 20,
+          backgroundColor: colors.surface,
+          borderRadius: 16,
+          padding: r.isXs ? 14 : 16,
+          borderWidth: 1,
+          borderColor: colors.border,
+        }}>
+          <Text style={{ color: colors.foreground, fontSize: r.fontSize.base, fontWeight: "700", marginBottom: 12 }}>
+            Platform Stats
+          </Text>
           <View style={{ flexDirection: "row", justifyContent: "space-around" }}>
             {[
               { label: "Users", value: "12K+" },
               { label: "Rating", value: "4.9/5" },
               { label: "Revenue", value: "$2.4M" },
             ].map((stat) => (
-              <View key={stat.label} style={{ alignItems: "center" }}>
-                <Text style={{ color: "#7C3AED", fontSize: 20, fontWeight: "800" }}>{stat.value}</Text>
-                <Text style={{ color: colors.muted, fontSize: 12, marginTop: 2 }}>{stat.label}</Text>
+              <View key={stat.label} style={{ alignItems: "center", flex: 1 }}>
+                <Text style={{ color: "#7C3AED", fontSize: r.isXs ? 18 : 20, fontWeight: "800" }}>{stat.value}</Text>
+                <Text style={{ color: colors.muted, fontSize: r.fontSize.xs, marginTop: 2 }}>{stat.label}</Text>
               </View>
             ))}
           </View>

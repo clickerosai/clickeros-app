@@ -89,3 +89,17 @@
 - [x] GET_ACCOUNTS permission policy page (/permissions/get-accounts) — web + in-app
 - [x] Register all new routes in Express server
 - [x] Add all new pages to Settings Legal section
+
+## Responsive Design & Layout Fixes
+- [x] Update global CSS / NativeWind config with responsive tokens and breakpoints
+- [x] Fix Dashboard screen — responsive cards, safe areas, touch targets
+- [x] Fix Campaigns screen — FlatList cards, horizontal scroll tables
+- [x] Fix AI Creator screen — form inputs, platform selector, results cards
+- [x] Fix Analytics screen — charts, metric grid, responsive tables
+- [x] Fix More screen — navigation list, section headers
+- [x] Fix all secondary/feature screens — stat cards, feature lists
+- [x] Fix legal HTML pages — viewport, responsive tables, mobile layout
+- [x] Fix Settings screen — list items, touch targets
+- [x] Ensure all touch targets are minimum 44x44px
+- [x] Eliminate horizontal overflow on all screens
+- [x] Add responsive typography (clamp, rem units)

@@ -2,6 +2,7 @@ import { ScrollView, Text, View, TouchableOpacity, Linking } from "react-native"
 import { useRouter } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
 import { useColors } from "@/hooks/use-colors";
+import { useResponsive } from "@/hooks/use-responsive";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 
 const DOMAIN = "https://clickerosai-ay2ehjve.manus.space";
@@ -11,88 +12,43 @@ const LEGAL_SECTIONS = [
     title: "Core Legal Documents",
     color: "#7C3AED",
     items: [
-      {
-        label: "Privacy Policy",
-        desc: "How we collect, use, and protect your data",
-        icon: "🔐",
-        route: "/privacy-policy",
-        url: `${DOMAIN}/privacy-policy`,
-      },
-      {
-        label: "Terms of Service",
-        desc: "The agreement governing your use of Clickeros AI",
-        icon: "📋",
-        route: "/terms-of-service",
-        url: `${DOMAIN}/terms-of-service`,
-      },
-      {
-        label: "Cookie Policy",
-        desc: "How we use cookies and tracking technologies",
-        icon: "🍪",
-        route: "/cookie-policy",
-        url: `${DOMAIN}/cookie-policy`,
-      },
+      { label: "Privacy Policy", desc: "How we collect and use your data", icon: "🔐", route: "/privacy-policy", url: `${DOMAIN}/privacy-policy` },
+      { label: "Terms of Service", desc: "The agreement governing your use of Clickeros AI", icon: "📋", route: "/terms-of-service", url: `${DOMAIN}/terms-of-service` },
+      { label: "Cookie Policy", desc: "How we use cookies and tracking technologies", icon: "🍪", route: "/cookie-policy", url: `${DOMAIN}/cookie-policy` },
     ],
   },
   {
     title: "Data Safety & Transparency",
     color: "#22C55E",
     items: [
-      {
-        label: "Data Safety",
-        desc: "Google Play Data Safety form information",
-        icon: "🛡️",
-        route: "/data-safety",
-        url: `${DOMAIN}/data-safety`,
-      },
-      {
-        label: "Data Deletion Request",
-        desc: "Request deletion of your personal data",
-        icon: "🗑️",
-        route: null,
-        url: `${DOMAIN}/data-safety#deletion`,
-      },
+      { label: "Data Safety", desc: "Google Play Data Safety form information", icon: "🛡️", route: "/data-safety", url: `${DOMAIN}/data-safety` },
+      { label: "Data Deletion Request", desc: "Request deletion of your personal data", icon: "🗑️", route: null, url: `${DOMAIN}/data-safety#deletion` },
     ],
   },
   {
     title: "Permission Policies",
     color: "#0EA5E9",
     items: [
-      {
-        label: "CAMERA Permission",
-        desc: "How and why we use your camera",
-        icon: "📷",
-        route: "/permissions/camera",
-        url: `${DOMAIN}/permissions/camera`,
-      },
-      {
-        label: "RECORD_AUDIO Permission",
-        desc: "How and why we use your microphone",
-        icon: "🎙️",
-        route: "/permissions/record-audio",
-        url: `${DOMAIN}/permissions/record-audio`,
-      },
-      {
-        label: "GET_ACCOUNTS Permission",
-        desc: "How and why we access your accounts",
-        icon: "👤",
-        route: "/permissions/get-accounts",
-        url: `${DOMAIN}/permissions/get-accounts`,
-      },
-      {
-        label: "READ_PHONE_STATE Permission",
-        desc: "How and why we read phone state",
-        icon: "📱",
-        route: "/privacy-policy",
-        url: `${DOMAIN}/privacy-policy`,
-      },
+      { label: "CAMERA Permission", desc: "How and why we use your camera", icon: "📷", route: "/permissions/camera", url: `${DOMAIN}/permissions/camera` },
+      { label: "RECORD_AUDIO Permission", desc: "How and why we use your microphone", icon: "🎙️", route: "/permissions/record-audio", url: `${DOMAIN}/permissions/record-audio` },
+      { label: "GET_ACCOUNTS Permission", desc: "How and why we access your accounts", icon: "👤", route: "/permissions/get-accounts", url: `${DOMAIN}/permissions/get-accounts` },
+      { label: "READ_PHONE_STATE Permission", desc: "How and why we read phone state", icon: "📱", route: "/privacy-policy", url: `${DOMAIN}/privacy-policy` },
     ],
   },
+];
+
+const PUBLIC_URLS = [
+  { label: "Privacy Policy", path: "/privacy-policy" },
+  { label: "Terms of Service", path: "/terms-of-service" },
+  { label: "Cookie Policy", path: "/cookie-policy" },
+  { label: "Data Safety", path: "/data-safety" },
+  { label: "Data Deletion", path: "/data-safety#deletion" },
 ];
 
 export default function LegalScreen() {
   const router = useRouter();
   const colors = useColors();
+  const r = useResponsive();
 
   const handlePress = (route: string | null, url: string) => {
     if (route) {
@@ -106,22 +62,22 @@ export default function LegalScreen() {
     <ScreenContainer>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 32 }}>
         {/* Header */}
-        <View style={{ backgroundColor: "#1E1B4B", paddingHorizontal: 20, paddingTop: 16, paddingBottom: 24 }}>
+        <View style={{ backgroundColor: "#1E1B4B", paddingHorizontal: r.px, paddingTop: 16, paddingBottom: 24 }}>
           <TouchableOpacity
-            style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 16 }}
+            style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 16, minHeight: 44 }}
             onPress={() => router.back()}
             activeOpacity={0.7}
           >
             <IconSymbol name="chevron.left" size={18} color="rgba(255,255,255,0.7)" />
-            <Text style={{ color: "rgba(255,255,255,0.7)", fontSize: 14 }}>Back</Text>
+            <Text style={{ color: "rgba(255,255,255,0.7)", fontSize: r.fontSize.base }}>Back</Text>
           </TouchableOpacity>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
-            <View style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: "rgba(255,255,255,0.15)", alignItems: "center", justifyContent: "center" }}>
+            <View style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: "rgba(255,255,255,0.15)", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
               <IconSymbol name="doc.text.fill" size={22} color="#FFFFFF" />
             </View>
-            <View>
-              <Text style={{ color: "#FFFFFF", fontSize: 20, fontWeight: "800" }}>Legal & Privacy</Text>
-              <Text style={{ color: "rgba(255,255,255,0.65)", fontSize: 12, marginTop: 2 }}>
+            <View style={{ flex: 1, minWidth: 0 }}>
+              <Text style={{ color: "#FFFFFF", fontSize: r.fontSize["2xl"], fontWeight: "800" }}>Legal & Privacy</Text>
+              <Text style={{ color: "rgba(255,255,255,0.65)", fontSize: r.fontSize.xs, marginTop: 2 }}>
                 All legal documents and permission policies
               </Text>
             </View>
@@ -130,10 +86,10 @@ export default function LegalScreen() {
 
         {/* Sections */}
         {LEGAL_SECTIONS.map((section) => (
-          <View key={section.title} style={{ paddingHorizontal: 16, marginTop: 20 }}>
+          <View key={section.title} style={{ paddingHorizontal: r.px, marginTop: 20 }}>
             <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 10 }}>
               <View style={{ width: 4, height: 18, borderRadius: 2, backgroundColor: section.color }} />
-              <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "700" }}>
+              <Text style={{ color: colors.foreground, fontSize: r.fontSize.md, fontWeight: "700" }}>
                 {section.title}
               </Text>
             </View>
@@ -142,10 +98,9 @@ export default function LegalScreen() {
                 <TouchableOpacity
                   key={item.label}
                   style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    paddingHorizontal: 16,
-                    paddingVertical: 14,
+                    flexDirection: "row", alignItems: "center",
+                    paddingHorizontal: r.isXs ? 14 : 16,
+                    minHeight: 56,
                     borderTopWidth: idx > 0 ? 1 : 0,
                     borderTopColor: colors.border,
                     gap: 12,
@@ -153,14 +108,14 @@ export default function LegalScreen() {
                   onPress={() => handlePress(item.route, item.url)}
                   activeOpacity={0.7}
                 >
-                  <View style={{ width: 38, height: 38, borderRadius: 10, backgroundColor: `${section.color}12`, alignItems: "center", justifyContent: "center" }}>
+                  <View style={{ width: 38, height: 38, borderRadius: 10, backgroundColor: `${section.color}12`, alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                     <Text style={{ fontSize: 18 }}>{item.icon}</Text>
                   </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "600" }}>{item.label}</Text>
-                    <Text style={{ color: colors.muted, fontSize: 12, marginTop: 1 }}>{item.desc}</Text>
+                  <View style={{ flex: 1, minWidth: 0 }}>
+                    <Text style={{ color: colors.foreground, fontSize: r.fontSize.base, fontWeight: "600" }} numberOfLines={1}>{item.label}</Text>
+                    <Text style={{ color: colors.muted, fontSize: r.fontSize.xs, marginTop: 1 }} numberOfLines={1}>{item.desc}</Text>
                   </View>
-                  <IconSymbol name="chevron.right" size={16} color={colors.muted} />
+                  <IconSymbol name="chevron.right" size={16} color={colors.muted} style={{ flexShrink: 0 }} />
                 </TouchableOpacity>
               ))}
             </View>
@@ -168,25 +123,19 @@ export default function LegalScreen() {
         ))}
 
         {/* Public URLs */}
-        <View style={{ marginHorizontal: 16, marginTop: 20, backgroundColor: "#7C3AED10", borderRadius: 14, padding: 16, borderWidth: 1, borderColor: "#7C3AED30" }}>
-          <Text style={{ color: "#7C3AED", fontSize: 13, fontWeight: "700", marginBottom: 10 }}>
+        <View style={{ marginHorizontal: r.px, marginTop: 20, backgroundColor: "#7C3AED10", borderRadius: 14, padding: 16, borderWidth: 1, borderColor: "#7C3AED30" }}>
+          <Text style={{ color: "#7C3AED", fontSize: r.fontSize.sm, fontWeight: "700", marginBottom: 10 }}>
             Public URLs (for app store submissions)
           </Text>
-          {[
-            { label: "Privacy Policy", path: "/privacy-policy" },
-            { label: "Terms of Service", path: "/terms-of-service" },
-            { label: "Cookie Policy", path: "/cookie-policy" },
-            { label: "Data Safety", path: "/data-safety" },
-            { label: "Data Deletion", path: "/data-safety#deletion" },
-          ].map((link) => (
+          {PUBLIC_URLS.map((link) => (
             <TouchableOpacity
               key={link.label}
-              style={{ marginBottom: 6 }}
+              style={{ marginBottom: 8, minHeight: 44, justifyContent: "center" }}
               onPress={() => Linking.openURL(`${DOMAIN}${link.path}`)}
               activeOpacity={0.7}
             >
-              <Text style={{ color: colors.muted, fontSize: 11 }}>{link.label}</Text>
-              <Text style={{ color: "#7C3AED", fontSize: 12, fontWeight: "500" }} numberOfLines={1}>
+              <Text style={{ color: colors.muted, fontSize: r.fontSize.xs }}>{link.label}</Text>
+              <Text style={{ color: "#7C3AED", fontSize: r.fontSize.xs, fontWeight: "500" }} numberOfLines={1}>
                 {DOMAIN}{link.path}
               </Text>
             </TouchableOpacity>
@@ -194,8 +143,8 @@ export default function LegalScreen() {
         </View>
 
         {/* Footer */}
-        <View style={{ marginHorizontal: 16, marginTop: 16, alignItems: "center" }}>
-          <Text style={{ color: colors.muted, fontSize: 12, textAlign: "center", lineHeight: 18 }}>
+        <View style={{ marginHorizontal: r.px, marginTop: 16, alignItems: "center" }}>
+          <Text style={{ color: colors.muted, fontSize: r.fontSize.xs, textAlign: "center", lineHeight: 18 }}>
             © 2026 Clickeros AI, Inc.{"\n"}
             Questions? privacy@clickeros.ai
           </Text>

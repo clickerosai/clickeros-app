@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useRouter } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
 import { useColors } from "@/hooks/use-colors";
+import { useResponsive } from "@/hooks/use-responsive";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 
 const TIME_RANGES = ["7D", "30D", "90D", "All"];
@@ -33,83 +34,111 @@ const TOP_CONTENT = [
 export default function AnalyticsScreen() {
   const router = useRouter();
   const colors = useColors();
+  const r = useResponsive();
   const [activeRange, setActiveRange] = useState("30D");
 
   return (
     <ScreenContainer>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 32 }}>
         {/* Header */}
-        <View style={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: colors.border }}>
-          <Text style={{ color: colors.foreground, fontSize: 22, fontWeight: "700", marginBottom: 12 }}>Analytics</Text>
+        <View style={{
+          paddingHorizontal: r.px, paddingTop: 16, paddingBottom: 12,
+          borderBottomWidth: 1, borderBottomColor: colors.border,
+        }}>
+          <Text style={{ color: colors.foreground, fontSize: r.fontSize["2xl"], fontWeight: "700", marginBottom: 12 }}>
+            Analytics
+          </Text>
           {/* Time Range Selector */}
-          <View style={{ flexDirection: "row", backgroundColor: colors.surface, borderRadius: 10, padding: 3, gap: 2 }}>
+          <View style={{
+            flexDirection: "row", backgroundColor: colors.surface,
+            borderRadius: 10, padding: 3, gap: 2,
+          }}>
             {TIME_RANGES.map((range) => (
               <TouchableOpacity
                 key={range}
                 style={{
-                  flex: 1,
-                  paddingVertical: 7,
-                  borderRadius: 8,
-                  alignItems: "center",
+                  flex: 1, height: 36, borderRadius: 8,
+                  alignItems: "center", justifyContent: "center",
                   backgroundColor: activeRange === range ? "#7C3AED" : "transparent",
                 }}
                 onPress={() => setActiveRange(range)}
                 activeOpacity={0.7}
               >
-                <Text style={{ color: activeRange === range ? "#FFFFFF" : colors.muted, fontSize: 13, fontWeight: "600" }}>{range}</Text>
+                <Text style={{
+                  color: activeRange === range ? "#FFFFFF" : colors.muted,
+                  fontSize: r.fontSize.sm, fontWeight: "600",
+                }}>{range}</Text>
               </TouchableOpacity>
             ))}
           </View>
         </View>
 
-        {/* Metrics Grid */}
-        <View style={{ paddingHorizontal: 16, marginTop: 16 }}>
+        {/* Metrics Grid — 2 columns, responsive */}
+        <View style={{ paddingHorizontal: r.px, marginTop: 16 }}>
           <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
             {METRICS.map((metric) => (
               <View
                 key={metric.label}
                 style={{
-                  width: "47%",
+                  width: r.statCardWidth,
                   backgroundColor: colors.background,
-                  borderRadius: 14,
-                  padding: 14,
-                  borderWidth: 1,
-                  borderColor: colors.border,
+                  borderRadius: 14, padding: r.isXs ? 12 : 14,
+                  borderWidth: 1, borderColor: colors.border,
+                  overflow: "hidden",
                 }}
               >
                 <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                  <View style={{ width: 32, height: 32, borderRadius: 8, backgroundColor: `${metric.color}15`, alignItems: "center", justifyContent: "center" }}>
-                    <IconSymbol name={metric.icon} size={16} color={metric.color} />
+                  <View style={{
+                    width: 32, height: 32, borderRadius: 8,
+                    backgroundColor: `${metric.color}15`,
+                    alignItems: "center", justifyContent: "center",
+                  }}>
+                    <IconSymbol name={metric.icon} size={15} color={metric.color} />
                   </View>
-                  <View style={{ backgroundColor: metric.positive ? "#DCFCE7" : "#FEE2E2", borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2 }}>
-                    <Text style={{ color: metric.positive ? "#16A34A" : "#DC2626", fontSize: 11, fontWeight: "600" }}>{metric.change}</Text>
+                  <View style={{
+                    backgroundColor: metric.positive ? "#DCFCE7" : "#FEE2E2",
+                    borderRadius: 6, paddingHorizontal: 5, paddingVertical: 2,
+                  }}>
+                    <Text style={{ color: metric.positive ? "#16A34A" : "#DC2626", fontSize: r.fontSize.xs, fontWeight: "600" }}>
+                      {metric.change}
+                    </Text>
                   </View>
                 </View>
-                <Text style={{ color: colors.foreground, fontSize: 18, fontWeight: "700" }}>{metric.value}</Text>
-                <Text style={{ color: colors.muted, fontSize: 11, marginTop: 2 }}>{metric.label}</Text>
+                <Text style={{ color: colors.foreground, fontSize: r.isXs ? 16 : 18, fontWeight: "700" }} numberOfLines={1}>
+                  {metric.value}
+                </Text>
+                <Text style={{ color: colors.muted, fontSize: r.fontSize.xs, marginTop: 2 }} numberOfLines={1}>
+                  {metric.label}
+                </Text>
               </View>
             ))}
           </View>
         </View>
 
-        {/* Revenue Chart Placeholder */}
-        <View style={{ marginHorizontal: 16, marginTop: 20 }}>
+        {/* Revenue Chart */}
+        <View style={{ marginHorizontal: r.px, marginTop: 20 }}>
           <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-            <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "700" }}>Revenue Trend</Text>
-            <TouchableOpacity onPress={() => router.push("/analytics-sales" as any)} activeOpacity={0.7}>
-              <Text style={{ color: "#7C3AED", fontSize: 13, fontWeight: "600" }}>Details</Text>
+            <Text style={{ color: colors.foreground, fontSize: r.fontSize.lg, fontWeight: "700" }}>Revenue Trend</Text>
+            <TouchableOpacity
+              onPress={() => router.push("/analytics-sales" as any)}
+              activeOpacity={0.7}
+              style={{ minHeight: 44, justifyContent: "center", paddingLeft: 8 }}
+            >
+              <Text style={{ color: "#7C3AED", fontSize: r.fontSize.sm, fontWeight: "600" }}>Details</Text>
             </TouchableOpacity>
           </View>
-          <View style={{ backgroundColor: colors.surface, borderRadius: 16, padding: 16, borderWidth: 1, borderColor: colors.border, height: 160, justifyContent: "flex-end" }}>
-            {/* Simple bar chart visualization */}
+          <View style={{
+            backgroundColor: colors.surface, borderRadius: 16, padding: 16,
+            borderWidth: 1, borderColor: colors.border, height: 160, justifyContent: "flex-end",
+            overflow: "hidden",
+          }}>
             <View style={{ flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between", height: 100 }}>
               {[40, 65, 55, 80, 70, 90, 85, 95, 75, 88, 92, 100, 87, 96].map((height, idx) => (
                 <View
                   key={idx}
                   style={{
-                    flex: 1,
-                    marginHorizontal: 2,
-                    height: `${height}%`,
+                    flex: 1, marginHorizontal: 2,
+                    height: `${height}%` as any,
                     backgroundColor: idx >= 10 ? "#7C3AED" : "#7C3AED40",
                     borderRadius: 4,
                   }}
@@ -117,91 +146,104 @@ export default function AnalyticsScreen() {
               ))}
             </View>
             <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 8 }}>
-              <Text style={{ color: colors.muted, fontSize: 10 }}>Apr 1</Text>
-              <Text style={{ color: colors.muted, fontSize: 10 }}>Apr 15</Text>
-              <Text style={{ color: colors.muted, fontSize: 10 }}>Apr 30</Text>
+              <Text style={{ color: colors.muted, fontSize: r.fontSize.xs }}>Apr 1</Text>
+              <Text style={{ color: colors.muted, fontSize: r.fontSize.xs }}>Apr 15</Text>
+              <Text style={{ color: colors.muted, fontSize: r.fontSize.xs }}>Apr 30</Text>
             </View>
           </View>
         </View>
 
         {/* Channel Breakdown */}
-        <View style={{ paddingHorizontal: 16, marginTop: 20 }}>
+        <View style={{ paddingHorizontal: r.px, marginTop: 20 }}>
           <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-            <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "700" }}>Channel Breakdown</Text>
-            <TouchableOpacity onPress={() => router.push("/analytics-attribution" as any)} activeOpacity={0.7}>
-              <Text style={{ color: "#7C3AED", fontSize: 13, fontWeight: "600" }}>Attribution</Text>
+            <Text style={{ color: colors.foreground, fontSize: r.fontSize.lg, fontWeight: "700" }}>Channel Breakdown</Text>
+            <TouchableOpacity
+              onPress={() => router.push("/analytics-attribution" as any)}
+              activeOpacity={0.7}
+              style={{ minHeight: 44, justifyContent: "center", paddingLeft: 8 }}
+            >
+              <Text style={{ color: "#7C3AED", fontSize: r.fontSize.sm, fontWeight: "600" }}>Attribution</Text>
             </TouchableOpacity>
           </View>
           {CHANNEL_DATA.map((channel) => (
             <View
               key={channel.channel}
               style={{
-                backgroundColor: colors.background,
-                borderRadius: 14,
-                padding: 14,
-                marginBottom: 10,
-                borderWidth: 1,
-                borderColor: colors.border,
+                backgroundColor: colors.background, borderRadius: 14,
+                padding: r.isXs ? 12 : 14, marginBottom: 10,
+                borderWidth: 1, borderColor: colors.border,
               }}
             >
               <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-                  <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: channel.color }} />
-                  <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "600" }}>{channel.channel}</Text>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 8, flex: 1, minWidth: 0 }}>
+                  <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: channel.color, flexShrink: 0 }} />
+                  <Text style={{ color: colors.foreground, fontSize: r.fontSize.base, fontWeight: "600" }} numberOfLines={1}>
+                    {channel.channel}
+                  </Text>
                 </View>
-                <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "700" }}>{channel.revenue}</Text>
+                <Text style={{ color: colors.foreground, fontSize: r.fontSize.base, fontWeight: "700", flexShrink: 0 }}>
+                  {channel.revenue}
+                </Text>
               </View>
-              {/* Progress Bar */}
-              <View style={{ backgroundColor: colors.surface, borderRadius: 4, height: 6, marginBottom: 8 }}>
-                <View style={{ backgroundColor: channel.color, borderRadius: 4, height: 6, width: `${channel.share}%` }} />
+              <View style={{ backgroundColor: colors.surface, borderRadius: 4, height: 6, marginBottom: 8, overflow: "hidden" }}>
+                <View style={{ backgroundColor: channel.color, borderRadius: 4, height: 6, width: `${channel.share}%` as any }} />
               </View>
-              <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-                <Text style={{ color: colors.muted, fontSize: 12 }}>Sessions: {channel.sessions}</Text>
-                <Text style={{ color: colors.muted, fontSize: 12 }}>ROAS: <Text style={{ color: colors.foreground, fontWeight: "600" }}>{channel.roas}</Text></Text>
-                <Text style={{ color: colors.muted, fontSize: 12 }}>{channel.share}% share</Text>
+              <View style={{ flexDirection: "row", justifyContent: "space-between", flexWrap: "wrap", gap: 4 }}>
+                <Text style={{ color: colors.muted, fontSize: r.fontSize.xs }}>Sessions: {channel.sessions}</Text>
+                <Text style={{ color: colors.muted, fontSize: r.fontSize.xs }}>
+                  ROAS: <Text style={{ color: colors.foreground, fontWeight: "600" }}>{channel.roas}</Text>
+                </Text>
+                <Text style={{ color: colors.muted, fontSize: r.fontSize.xs }}>{channel.share}% share</Text>
               </View>
             </View>
           ))}
         </View>
 
         {/* Top Content */}
-        <View style={{ paddingHorizontal: 16, marginTop: 20 }}>
+        <View style={{ paddingHorizontal: r.px, marginTop: 20 }}>
           <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-            <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "700" }}>Top Content by Revenue</Text>
-            <TouchableOpacity onPress={() => router.push("/revenue-attribution" as any)} activeOpacity={0.7}>
-              <Text style={{ color: "#7C3AED", fontSize: 13, fontWeight: "600" }}>Full Report</Text>
+            <Text style={{ color: colors.foreground, fontSize: r.fontSize.lg, fontWeight: "700" }}>Top Content</Text>
+            <TouchableOpacity
+              onPress={() => router.push("/revenue-attribution" as any)}
+              activeOpacity={0.7}
+              style={{ minHeight: 44, justifyContent: "center", paddingLeft: 8 }}
+            >
+              <Text style={{ color: "#7C3AED", fontSize: r.fontSize.sm, fontWeight: "600" }}>Full Report</Text>
             </TouchableOpacity>
           </View>
           {TOP_CONTENT.map((content) => (
             <View
               key={content.rank}
               style={{
-                backgroundColor: colors.background,
-                borderRadius: 14,
-                padding: 14,
-                marginBottom: 10,
-                borderWidth: 1,
-                borderColor: colors.border,
-                flexDirection: "row",
-                alignItems: "center",
-                gap: 12,
+                backgroundColor: colors.background, borderRadius: 14,
+                padding: r.isXs ? 12 : 14, marginBottom: 10,
+                borderWidth: 1, borderColor: colors.border,
+                flexDirection: "row", alignItems: "center", gap: 12,
               }}
             >
-              <View style={{ width: 32, height: 32, borderRadius: 8, backgroundColor: "#7C3AED15", alignItems: "center", justifyContent: "center" }}>
-                <Text style={{ color: "#7C3AED", fontSize: 14, fontWeight: "700" }}>#{content.rank}</Text>
+              <View style={{
+                width: 32, height: 32, borderRadius: 8,
+                backgroundColor: "#7C3AED15", alignItems: "center", justifyContent: "center",
+                flexShrink: 0,
+              }}>
+                <Text style={{ color: "#7C3AED", fontSize: r.fontSize.sm, fontWeight: "700" }}>#{content.rank}</Text>
               </View>
-              <View style={{ flex: 1 }}>
-                <Text style={{ color: colors.foreground, fontSize: 13, fontWeight: "600" }} numberOfLines={2}>{content.title}</Text>
-                <Text style={{ color: colors.muted, fontSize: 12, marginTop: 2 }}>Traffic: {content.traffic}</Text>
+              <View style={{ flex: 1, minWidth: 0 }}>
+                <Text style={{ color: colors.foreground, fontSize: r.fontSize.sm, fontWeight: "600" }} numberOfLines={2}>
+                  {content.title}
+                </Text>
+                <Text style={{ color: colors.muted, fontSize: r.fontSize.xs, marginTop: 2 }}>Traffic: {content.traffic}</Text>
               </View>
-              <Text style={{ color: "#22C55E", fontSize: 14, fontWeight: "700" }}>{content.revenue}</Text>
+              <Text style={{ color: "#22C55E", fontSize: r.fontSize.base, fontWeight: "700", flexShrink: 0 }}>
+                {content.revenue}
+              </Text>
             </View>
           ))}
         </View>
 
         {/* Quick Links */}
-        <View style={{ paddingHorizontal: 16, marginTop: 20 }}>
-          <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "700", marginBottom: 12 }}>Deep Analytics</Text>
+        <View style={{ paddingHorizontal: r.px, marginTop: 20 }}>
+          <Text style={{ color: colors.foreground, fontSize: r.fontSize.lg, fontWeight: "700", marginBottom: 12 }}>Deep Analytics</Text>
           <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
             {[
               { label: "Campaign Performance", route: "/campaign-performance", color: "#7C3AED" },
@@ -212,17 +254,16 @@ export default function AnalyticsScreen() {
               <TouchableOpacity
                 key={link.label}
                 style={{
-                  width: "47%",
+                  width: r.statCardWidth,
                   backgroundColor: `${link.color}10`,
-                  borderRadius: 12,
-                  padding: 14,
-                  borderWidth: 1,
-                  borderColor: `${link.color}30`,
+                  borderRadius: 12, padding: 14,
+                  borderWidth: 1, borderColor: `${link.color}30`,
+                  minHeight: 44,
                 }}
                 onPress={() => router.push(link.route as any)}
                 activeOpacity={0.7}
               >
-                <Text style={{ color: link.color, fontSize: 13, fontWeight: "600" }}>{link.label}</Text>
+                <Text style={{ color: link.color, fontSize: r.fontSize.sm, fontWeight: "600" }}>{link.label}</Text>
                 <IconSymbol name="chevron.right" size={14} color={link.color} style={{ marginTop: 4 }} />
               </TouchableOpacity>
             ))}
@@ -232,4 +273,3 @@ export default function AnalyticsScreen() {
     </ScreenContainer>
   );
 }
-

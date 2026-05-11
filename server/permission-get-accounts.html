@@ -89,7 +89,41 @@
     @media(max-width:640px){ .toc ol { grid-template-columns:1fr; }
       .perm-row { grid-template-columns:1fr; gap:2px; }
       .perm-label { font-size:11px; text-transform:uppercase; color:var(--slate-500); } }
-</style>
+
+    /* ── Responsive additions ── */
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+    body { overflow-x: hidden; }
+    img, video, iframe { max-width: 100%; height: auto; }
+    table { width: 100%; overflow-x: auto; display: block; }
+    @media (max-width: 640px) {
+      .container { padding: 20px 16px 60px; }
+      .section { padding: 18px 16px; }
+      .contact-row { flex-direction: column; gap: 2px; }
+      .contact-label { min-width: unset; font-size: 11px; text-transform: uppercase; letter-spacing: 0.3px; color: var(--slate-500); }
+      .toc ol { grid-template-columns: 1fr; }
+      .perm-row { grid-template-columns: 1fr; gap: 2px; }
+      .perm-label { font-size: 11px; text-transform: uppercase; color: var(--slate-500); }
+      table { font-size: 12px; }
+      th, td { padding: 8px 10px; }
+      .header h1 { font-size: clamp(20px, 6vw, 32px); }
+      .header p { font-size: 14px; }
+      .header-meta { gap: 10px; padding: 8px 14px; font-size: 12px; flex-direction: column; }
+      .highlight { font-size: 13px; }
+      .rights-grid { grid-template-columns: 1fr; }
+      .footer-links { gap: 12px; }
+    }
+    @media (min-width: 641px) and (max-width: 1023px) {
+      .container { padding: 32px 20px 70px; }
+    }
+    @media (min-width: 1024px) {
+      .container { max-width: 900px; }
+    }
+    @media (min-width: 1440px) {
+      .container { max-width: 1000px; }
+    }
+
+  </style>
 </head>
 <body>
 <header class="header" style="background:linear-gradient(135deg,#14532D 0%,#15803D 100%);">

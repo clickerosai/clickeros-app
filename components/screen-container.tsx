@@ -1,6 +1,6 @@
-import { View, type ViewProps } from "react-native";
+import { View, type ViewProps, Platform } from "react-native";
 import { SafeAreaView, type Edge } from "react-native-safe-area-context";
-
+import { useWindowDimensions } from "react-native";
 import { cn } from "@/lib/utils";
 
 export interface ScreenContainerProps extends ViewProps {
@@ -21,22 +21,21 @@ export interface ScreenContainerProps extends ViewProps {
    * Additional className for the SafeAreaView (content layer).
    */
   safeAreaClassName?: string;
+  /**
+   * When true, constrains content to a max-width on large screens (web/tablet/desktop).
+   * Defaults to false for full-bleed mobile layouts.
+   */
+  constrained?: boolean;
 }
 
 /**
- * A container component that properly handles SafeArea and background colors.
+ * A container component that properly handles SafeArea, background colors,
+ * and responsive layout across all device sizes.
  *
- * The outer View extends to full screen (including status bar area) with the background color,
- * while the inner SafeAreaView ensures content is within safe bounds.
- *
- * Usage:
- * ```tsx
- * <ScreenContainer className="p-4">
- *   <Text className="text-2xl font-bold text-foreground">
- *     Welcome
- *   </Text>
- * </ScreenContainer>
- * ```
+ * - On phones: full-width, edge-to-edge
+ * - On tablets/desktop: optionally constrained to max-width with centered content
+ * - Always handles safe area insets correctly
+ * - Prevents content from going behind status bar or home indicator
  */
 export function ScreenContainer({
   children,
@@ -44,16 +43,17 @@ export function ScreenContainer({
   className,
   containerClassName,
   safeAreaClassName,
+  constrained = false,
   style,
   ...props
 }: ScreenContainerProps) {
+  const { width } = useWindowDimensions();
+  const isLargeScreen = width >= 768;
+  const isWeb = Platform.OS === "web";
+
   return (
     <View
-      className={cn(
-        "flex-1",
-        "bg-background",
-        containerClassName
-      )}
+      className={cn("flex-1 bg-background", containerClassName)}
       {...props}
     >
       <SafeAreaView
@@ -61,7 +61,21 @@ export function ScreenContainer({
         className={cn("flex-1", safeAreaClassName)}
         style={style}
       >
-        <View className={cn("flex-1", className)}>{children}</View>
+        {constrained && (isLargeScreen || isWeb) ? (
+          // On large screens, center content with max-width
+          <View
+            style={{
+              flex: 1,
+              maxWidth: 860,
+              width: "100%",
+              alignSelf: "center",
+            }}
+          >
+            <View className={cn("flex-1", className)}>{children}</View>
+          </View>
+        ) : (
+          <View className={cn("flex-1", className)}>{children}</View>
+        )}
       </SafeAreaView>
     </View>
   );
