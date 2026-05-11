@@ -32,7 +32,7 @@ const SETTINGS_SECTIONS = [
     title: "Legal & Privacy",
     items: [
       { label: "Privacy Policy", desc: "How we collect and use your data", icon: "🔐", route: "/privacy-policy" },
-      { label: "Terms of Service", desc: "Terms governing use of Clickeros AI", icon: "📄", route: null },
+      { label: "Terms of Service", desc: "Terms governing use of Clickeros AI", icon: "📄", route: "/terms-of-service" },
       { label: "Data & Permissions", desc: "Manage app permissions and data access", icon: "🛡️", route: "/privacy-policy" },
     ],
   },

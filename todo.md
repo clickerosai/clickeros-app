@@ -75,3 +75,8 @@
 
 ## Public Web Privacy Policy
 - [x] Create public /privacy-policy web page (HTML, SEO-friendly, Google Play submittable)
+
+## Terms of Service
+- [x] Create public /terms-of-service web page (HTML, Google Play / App Store submittable)
+- [x] Create in-app Terms of Service screen
+- [x] Link Terms of Service from Settings screen
