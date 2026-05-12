@@ -103,3 +103,7 @@
 - [x] Ensure all touch targets are minimum 44x44px
 - [x] Eliminate horizontal overflow on all screens
 - [x] Add responsive typography (clamp, rem units)
+
+## Pull-to-Refresh
+- [x] Add pull-to-refresh to Dashboard screen with haptic feedback and last-updated timestamp
+- [x] Add pull-to-refresh to Campaigns screen with haptic feedback and last-updated timestamp

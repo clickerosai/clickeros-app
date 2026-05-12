@@ -1,15 +1,31 @@
-import { ScrollView, Text, View, TouchableOpacity } from "react-native";
+import {
+  ScrollView,
+  Text,
+  View,
+  TouchableOpacity,
+  RefreshControl,
+  Platform,
+} from "react-native";
+import { useState, useCallback } from "react";
 import { useRouter } from "expo-router";
+import * as Haptics from "expo-haptics";
 import { ScreenContainer } from "@/components/screen-container";
 import { useColors } from "@/hooks/use-colors";
 import { useResponsive } from "@/hooks/use-responsive";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 
-const STATS = [
+const INITIAL_STATS = [
   { label: "Active Campaigns", value: "12", change: "+3", icon: "megaphone.fill" as const, color: "#7C3AED" },
   { label: "Total Revenue", value: "$48.2K", change: "+18%", icon: "dollarsign.circle.fill" as const, color: "#22C55E" },
   { label: "Avg. ROAS", value: "3.8x", change: "+0.4", icon: "chart.line.uptrend.xyaxis" as const, color: "#F59E0B" },
   { label: "CTR", value: "4.7%", change: "+1.2%", icon: "percent" as const, color: "#06B6D4" },
+];
+
+const REFRESHED_STATS = [
+  { label: "Active Campaigns", value: "14", change: "+5", icon: "megaphone.fill" as const, color: "#7C3AED" },
+  { label: "Total Revenue", value: "$51.8K", change: "+22%", icon: "dollarsign.circle.fill" as const, color: "#22C55E" },
+  { label: "Avg. ROAS", value: "4.1x", change: "+0.7", icon: "chart.line.uptrend.xyaxis" as const, color: "#F59E0B" },
+  { label: "CTR", value: "5.2%", change: "+1.7%", icon: "percent" as const, color: "#06B6D4" },
 ];
 
 const QUICK_ACTIONS = [
@@ -19,24 +35,78 @@ const QUICK_ACTIONS = [
   { label: "Reports", icon: "doc.text.fill" as const, route: "/reports", color: "#22C55E" },
 ];
 
-const RECENT_CAMPAIGNS = [
+const INITIAL_CAMPAIGNS = [
   { id: "1", name: "Summer Sale FB", platform: "Facebook", status: "Active", roas: "4.2x", spend: "$1,240", color: "#1877F2" },
   { id: "2", name: "Product Launch IG", platform: "Instagram", status: "Active", roas: "3.8x", spend: "$890", color: "#E1306C" },
   { id: "3", name: "Google Search Q2", platform: "Google", status: "Paused", roas: "2.9x", spend: "$2,100", color: "#4285F4" },
   { id: "4", name: "TikTok Awareness", platform: "TikTok", status: "Active", roas: "5.1x", spend: "$560", color: "#000000" },
 ];
 
+const REFRESHED_CAMPAIGNS = [
+  { id: "1", name: "Summer Sale FB", platform: "Facebook", status: "Scaling", roas: "4.8x", spend: "$1,490", color: "#1877F2" },
+  { id: "2", name: "Product Launch IG", platform: "Instagram", status: "Active", roas: "4.1x", spend: "$1,020", color: "#E1306C" },
+  { id: "3", name: "Google Search Q2", platform: "Google", status: "Active", roas: "3.4x", spend: "$2,380", color: "#4285F4" },
+  { id: "4", name: "TikTok Awareness", platform: "TikTok", status: "Active", roas: "5.6x", spend: "$640", color: "#000000" },
+];
+
+function formatTime(date: Date): string {
+  return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
+
 export default function DashboardScreen() {
   const router = useRouter();
   const colors = useColors();
   const r = useResponsive();
+
+  const [refreshing, setRefreshing] = useState(false);
+  const [refreshCount, setRefreshCount] = useState(0);
+  const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
+  const [stats, setStats] = useState(INITIAL_STATS);
+  const [campaigns, setCampaigns] = useState(INITIAL_CAMPAIGNS);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+
+    // Haptic feedback on pull start (native only)
+    if (Platform.OS !== "web") {
+      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    }
+
+    // Simulate network request (1.5 seconds)
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+
+    // Toggle between two data sets to show visible refresh
+    const isEven = refreshCount % 2 === 0;
+    setStats(isEven ? REFRESHED_STATS : INITIAL_STATS);
+    setCampaigns(isEven ? REFRESHED_CAMPAIGNS : INITIAL_CAMPAIGNS);
+    setRefreshCount((c) => c + 1);
+    setLastUpdated(new Date());
+
+    // Success haptic on completion (native only)
+    if (Platform.OS !== "web") {
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    }
+
+    setRefreshing(false);
+  }, [refreshCount]);
 
   return (
     <ScreenContainer>
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 32 }}
-        overScrollMode="never"
+        overScrollMode="always"
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#7C3AED"
+            colors={["#7C3AED", "#9333EA"]}
+            progressBackgroundColor={colors.background}
+            title="Updating dashboard..."
+            titleColor={colors.muted}
+          />
+        }
       >
         {/* Header */}
         <View style={{
@@ -66,15 +136,29 @@ export default function DashboardScreen() {
               <IconSymbol name="bell.fill" size={20} color="#FFFFFF" />
             </TouchableOpacity>
           </View>
-          <Text style={{ color: "rgba(255,255,255,0.7)", fontSize: r.fontSize.sm, marginTop: 6 }}>
-            Turn Content Into Revenue — Automatically
-          </Text>
+
+          {/* Last Updated Row */}
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginTop: 8 }}>
+            <IconSymbol
+              name={refreshing ? "arrow.triangle.2.circlepath" : "checkmark.circle.fill"}
+              size={12}
+              color={refreshing ? "rgba(255,255,255,0.6)" : "rgba(255,255,255,0.7)"}
+            />
+            <Text style={{ color: "rgba(255,255,255,0.7)", fontSize: r.fontSize.xs }}>
+              {refreshing ? "Refreshing…" : `Updated at ${formatTime(lastUpdated)}`}
+            </Text>
+            {!refreshing && (
+              <Text style={{ color: "rgba(255,255,255,0.4)", fontSize: r.fontSize.xs }}>
+                · Pull down to refresh
+              </Text>
+            )}
+          </View>
         </View>
 
-        {/* Stats Cards — 2-column grid, responsive */}
+        {/* Stats Cards */}
         <View style={{ paddingHorizontal: r.px, marginTop: -16 }}>
           <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
-            {STATS.map((stat) => (
+            {stats.map((stat) => (
               <View
                 key={stat.label}
                 style={{
@@ -90,6 +174,7 @@ export default function DashboardScreen() {
                   borderWidth: 1,
                   borderColor: colors.border,
                   overflow: "hidden",
+                  opacity: refreshing ? 0.6 : 1,
                 }}
               >
                 <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
@@ -183,8 +268,7 @@ export default function DashboardScreen() {
                 backgroundColor: "rgba(255,255,255,0.2)",
                 borderRadius: 8,
                 paddingHorizontal: 10,
-                paddingVertical: 8,
-                minHeight: 44,
+                height: 44,
                 justifyContent: "center",
                 flexShrink: 0,
               }}
@@ -210,7 +294,7 @@ export default function DashboardScreen() {
               <Text style={{ color: "#7C3AED", fontSize: r.fontSize.sm, fontWeight: "600" }}>See All</Text>
             </TouchableOpacity>
           </View>
-          {RECENT_CAMPAIGNS.map((campaign) => (
+          {campaigns.map((campaign) => (
             <TouchableOpacity
               key={campaign.id}
               style={{
@@ -224,6 +308,7 @@ export default function DashboardScreen() {
                 alignItems: "center",
                 gap: 12,
                 minHeight: 44,
+                opacity: refreshing ? 0.6 : 1,
               }}
               onPress={() => router.push("/campaigns" as any)}
               activeOpacity={0.7}
@@ -246,11 +331,11 @@ export default function DashboardScreen() {
               </View>
               <View style={{ alignItems: "flex-end", flexShrink: 0 }}>
                 <View style={{
-                  backgroundColor: campaign.status === "Active" ? "#DCFCE7" : "#FEF9C3",
+                  backgroundColor: campaign.status === "Active" ? "#DCFCE7" : campaign.status === "Scaling" ? "#EDE9FE" : "#FEF9C3",
                   borderRadius: 6, paddingHorizontal: 7, paddingVertical: 3, marginBottom: 4,
                 }}>
                   <Text style={{
-                    color: campaign.status === "Active" ? "#16A34A" : "#CA8A04",
+                    color: campaign.status === "Active" ? "#16A34A" : campaign.status === "Scaling" ? "#7C3AED" : "#CA8A04",
                     fontSize: r.fontSize.xs, fontWeight: "600",
                   }}>
                     {campaign.status}
