@@ -1,25 +1,82 @@
 import { Tabs } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Platform, useWindowDimensions } from "react-native";
+import { Platform, View, useWindowDimensions } from "react-native";
+import { useEffect, useState } from "react";
 
 import { HapticTab } from "@/components/haptic-tab";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useColors } from "@/hooks/use-colors";
+import { StaleDataStore } from "@/hooks/use-stale-data";
+
+/**
+ * A small dot badge shown on a tab icon when data is stale (>5 min old).
+ * Positioned at the top-right of the icon.
+ */
+function StaleDot({ color }: { color: string }) {
+  return (
+    <View
+      style={{
+        position: "absolute",
+        top: -2,
+        right: -4,
+        width: 8,
+        height: 8,
+        borderRadius: 4,
+        backgroundColor: "#F59E0B",
+        borderWidth: 1.5,
+        borderColor: color,
+      }}
+    />
+  );
+}
+
+/**
+ * Tab icon wrapper that optionally shows a stale-data dot.
+ */
+function TabIcon({
+  iconName,
+  color,
+  size,
+  staleKey,
+  bgColor,
+}: {
+  iconName: Parameters<typeof IconSymbol>[0]["name"];
+  color: string;
+  size: number;
+  staleKey?: string;
+  bgColor: string;
+}) {
+  const [isStale, setIsStale] = useState(false);
+
+  useEffect(() => {
+    if (!staleKey) return;
+    // Seed initial stale state
+    setIsStale(StaleDataStore.isStale(staleKey));
+    // Subscribe to updates
+    const unsub = StaleDataStore.subscribe((k, stale) => {
+      if (k === staleKey) setIsStale(stale);
+    });
+    return () => { unsub(); };
+  }, [staleKey]);
+
+  return (
+    <View style={{ position: "relative", alignItems: "center", justifyContent: "center" }}>
+      <IconSymbol size={size} name={iconName} color={color} />
+      {staleKey && isStale && <StaleDot color={bgColor} />}
+    </View>
+  );
+}
 
 export default function TabLayout() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
 
-  // Responsive bottom padding — respect safe area on notched devices
   const bottomPadding = Platform.OS === "web"
     ? 12
     : Math.max(insets.bottom, 8);
 
-  // Slightly taller tab bar on large screens
   const tabBarHeight = width >= 768 ? 64 + bottomPadding : 56 + bottomPadding;
-
-  // Responsive icon size
   const iconSize = width >= 768 ? 26 : 24;
 
   return (
@@ -35,7 +92,6 @@ export default function TabLayout() {
           backgroundColor: colors.background,
           borderTopColor: colors.border,
           borderTopWidth: 0.5,
-          // Prevent tab bar from causing layout overflow
           overflow: "hidden",
         },
         tabBarLabelStyle: {
@@ -43,7 +99,6 @@ export default function TabLayout() {
           fontWeight: "500",
           marginTop: 2,
         },
-        // Ensure tab bar items have minimum 44px touch area
         tabBarItemStyle: {
           minHeight: 44,
         },
@@ -53,35 +108,72 @@ export default function TabLayout() {
         name="index"
         options={{
           title: "Dashboard",
-          tabBarIcon: ({ color }) => <IconSymbol size={iconSize} name="house.fill" color={color} />,
+          tabBarIcon: ({ color }) => (
+            <TabIcon
+              iconName="house.fill"
+              color={color}
+              size={iconSize}
+              staleKey="dashboard"
+              bgColor={colors.background}
+            />
+          ),
         }}
       />
       <Tabs.Screen
         name="campaigns"
         options={{
           title: "Campaigns",
-          tabBarIcon: ({ color }) => <IconSymbol size={iconSize} name="megaphone.fill" color={color} />,
+          tabBarIcon: ({ color }) => (
+            <TabIcon
+              iconName="megaphone.fill"
+              color={color}
+              size={iconSize}
+              staleKey="campaigns"
+              bgColor={colors.background}
+            />
+          ),
         }}
       />
       <Tabs.Screen
         name="creator"
         options={{
           title: "AI Creator",
-          tabBarIcon: ({ color }) => <IconSymbol size={iconSize} name="wand.and.stars" color={color} />,
+          tabBarIcon: ({ color }) => (
+            <TabIcon
+              iconName="wand.and.stars"
+              color={color}
+              size={iconSize}
+              bgColor={colors.background}
+            />
+          ),
         }}
       />
       <Tabs.Screen
         name="analytics"
         options={{
           title: "Analytics",
-          tabBarIcon: ({ color }) => <IconSymbol size={iconSize} name="chart.bar.fill" color={color} />,
+          tabBarIcon: ({ color }) => (
+            <TabIcon
+              iconName="chart.bar.fill"
+              color={color}
+              size={iconSize}
+              bgColor={colors.background}
+            />
+          ),
         }}
       />
       <Tabs.Screen
         name="more"
         options={{
           title: "More",
-          tabBarIcon: ({ color }) => <IconSymbol size={iconSize} name="ellipsis.circle.fill" color={color} />,
+          tabBarIcon: ({ color }) => (
+            <TabIcon
+              iconName="ellipsis.circle.fill"
+              color={color}
+              size={iconSize}
+              bgColor={colors.background}
+            />
+          ),
         }}
       />
     </Tabs>

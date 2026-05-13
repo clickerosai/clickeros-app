@@ -21,8 +21,7 @@ describe("Pull-to-Refresh — Dashboard Screen", () => {
   });
 
   it("has refreshing state", () => {
-    expect(dashboardContent).toContain("refreshing");
-    expect(dashboardContent).toContain("setRefreshing");
+    expect(dashboardContent).toContain("isRefreshing");
   });
 
   it("passes RefreshControl to ScrollView", () => {
@@ -49,7 +48,8 @@ describe("Pull-to-Refresh — Dashboard Screen", () => {
   });
 
   it("dims cards while refreshing with opacity", () => {
-    expect(dashboardContent).toContain("opacity: refreshing ? 0.6 : 1");
+    // New tRPC-based screen uses isRefreshing state
+    expect(dashboardContent).toContain("isRefreshing ? 0.6 : 1");
   });
 
   it("guards haptics with Platform.OS check for web compatibility", () => {
@@ -74,8 +74,7 @@ describe("Pull-to-Refresh — Campaigns Screen", () => {
   });
 
   it("has refreshing state", () => {
-    expect(campaignsContent).toContain("refreshing");
-    expect(campaignsContent).toContain("setRefreshing");
+    expect(campaignsContent).toContain("isRefreshing");
   });
 
   it("passes RefreshControl to FlatList", () => {
@@ -102,7 +101,8 @@ describe("Pull-to-Refresh — Campaigns Screen", () => {
   });
 
   it("dims campaign cards while refreshing", () => {
-    expect(campaignsContent).toContain("opacity: refreshing ? 0.65 : 1");
+    // New tRPC-based screen uses isRefreshing state
+    expect(campaignsContent).toContain("isRefreshing ? 0.65 : 1");
   });
 
   it("guards haptics with Platform.OS check for web compatibility", () => {

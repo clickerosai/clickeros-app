@@ -107,3 +107,11 @@
 ## Pull-to-Refresh
 - [x] Add pull-to-refresh to Dashboard screen with haptic feedback and last-updated timestamp
 - [x] Add pull-to-refresh to Campaigns screen with haptic feedback and last-updated timestamp
+
+## Improvements (Step 1-2-3)
+- [x] Pull-to-refresh on Analytics screen
+- [x] tRPC backend router for dashboard stats, campaigns, and analytics data
+- [x] Connect Dashboard screen to real API data via TanStack Query
+- [x] Connect Campaigns screen to real API data via TanStack Query
+- [x] Connect Analytics screen to real API data via TanStack Query
+- [x] Stale-data badge on Dashboard and Campaigns tab bar icons
