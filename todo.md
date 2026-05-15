@@ -115,3 +115,15 @@
 - [x] Connect Campaigns screen to real API data via TanStack Query
 - [x] Connect Analytics screen to real API data via TanStack Query
 - [x] Stale-data badge on Dashboard and Campaigns tab bar icons
+
+## AI Ads Generator Overhaul
+- [x] tRPC adGenerator endpoint with grounded prompt engine and LLM integration
+- [x] Post-generation relevance scoring (keyword match, audience, goal, CTA)
+- [x] Smart fallback mode (template-based ads when AI fails)
+- [x] Multi-platform style differentiation (Meta, TikTok, Google, LinkedIn)
+- [x] Form validation with inline errors (required fields)
+- [x] Progress UX: loading animation, step-by-step status messages
+- [x] Regenerate button and Edit variation option
+- [x] Context memory fix: always use latest form state, no stale data
+- [x] Expo Go mobile optimizations (keyboard, double-click prevention)
+- [x] Developer debug logs for payload, result, score, rejections
