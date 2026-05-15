@@ -17,7 +17,7 @@ const SETTINGS_SECTIONS = [
   {
     title: "Integrations",
     items: [
-      { label: "Connected Accounts", desc: "Facebook, Google, TikTok, and more", icon: "🔗", route: "/integrations" },
+      { label: "Connected Accounts", desc: "Facebook, Google, TikTok, and more", icon: "🔗", route: "/connect-accounts" },
       { label: "Team Members", desc: "Invite and manage team access", icon: "👥", route: null },
       { label: "API Access", desc: "Generate and manage API keys", icon: "⚙️", route: null },
     ],
@@ -32,11 +32,50 @@ const SETTINGS_SECTIONS = [
   {
     title: "Legal & Privacy",
     items: [
-      { label: "Privacy Policy", desc: "How we collect and use your data", icon: "🔐", route: "/privacy-policy" },
-      { label: "Terms of Service", desc: "Terms governing use of Clickeros AI", icon: "📄", route: "/terms-of-service" },
-      { label: "Cookie Policy", desc: "Cookies and tracking technologies", icon: "🍪", route: "/cookie-policy" },
-      { label: "Data Safety", desc: "Google Play data safety information", icon: "🛡️", route: "/data-safety" },
-      { label: "All Legal Documents", desc: "Privacy, permissions, and compliance hub", icon: "⚖️", route: "/legal" },
+      {
+        label: "Privacy Policy",
+        desc: "How we collect, use, and protect your data",
+        icon: "🔐",
+        route: "/privacy-policy-screen",
+      },
+      {
+        label: "Terms of Service",
+        desc: "The agreement governing your use of Clickeros AI",
+        icon: "📋",
+        route: "/terms-of-service-screen",
+      },
+      {
+        label: "Permission Disclosures",
+        desc: "Camera, microphone, phone state, and accounts",
+        icon: "📱",
+        route: "/permission-disclosures",
+      },
+      {
+        label: "Cookie Policy",
+        desc: "Cookies and tracking technologies",
+        icon: "🍪",
+        route: "/cookie-policy",
+      },
+      {
+        label: "Data Safety",
+        desc: "Google Play data safety information",
+        icon: "🛡️",
+        route: "/data-safety",
+      },
+      {
+        label: "All Legal Documents",
+        desc: "Full legal hub with all policies",
+        icon: "⚖️",
+        route: "/legal",
+      },
+    ],
+  },
+  {
+    title: "Support",
+    items: [
+      { label: "Help Center", desc: "FAQs, guides, and tutorials", icon: "❓", route: "/support-dashboard" },
+      { label: "Contact Support", desc: "Chat with our support team", icon: "💬", route: null },
+      { label: "Report a Bug", desc: "Help us improve the app", icon: "🐛", route: null },
     ],
   },
 ];
@@ -121,33 +160,36 @@ export default function SettingsScreen() {
           </View>
         ))}
 
-        {/* Privacy Policy Highlight */}
+        {/* Legal Quick Access */}
         <View style={{ marginHorizontal: r.px, marginTop: 20 }}>
-          <TouchableOpacity
-            style={{
-              backgroundColor: "#7C3AED10", borderRadius: 16, padding: r.isXs ? 14 : 16,
-              borderWidth: 1, borderColor: "#7C3AED30",
-              flexDirection: "row", alignItems: "center", gap: 12,
-              minHeight: 56,
-            }}
-            onPress={() => router.push("/legal" as any)}
-            activeOpacity={0.7}
-          >
-            <View style={{
-              width: 44, height: 44, borderRadius: 12,
-              backgroundColor: "#7C3AED20", alignItems: "center", justifyContent: "center",
-              flexShrink: 0,
-            }}>
-              <IconSymbol name="lock.fill" size={22} color="#7C3AED" />
+          <View style={{
+            backgroundColor: "#7C3AED10", borderRadius: 16, padding: r.isXs ? 14 : 16,
+            borderWidth: 1, borderColor: "#7C3AED30",
+          }}>
+            <Text style={{ color: "#7C3AED", fontSize: r.fontSize.base, fontWeight: "700", marginBottom: 12 }}>
+              📄 Legal Documents
+            </Text>
+            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+              {[
+                { label: "Privacy Policy", route: "/privacy-policy-screen" },
+                { label: "Terms of Service", route: "/terms-of-service-screen" },
+                { label: "Permissions", route: "/permission-disclosures" },
+              ].map((link) => (
+                <TouchableOpacity
+                  key={link.label}
+                  style={{
+                    backgroundColor: "#7C3AED20", borderRadius: 8,
+                    paddingHorizontal: 12, height: 36,
+                    alignItems: "center", justifyContent: "center",
+                  }}
+                  onPress={() => router.push(link.route as any)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={{ color: "#7C3AED", fontSize: r.fontSize.xs, fontWeight: "600" }}>{link.label}</Text>
+                </TouchableOpacity>
+              ))}
             </View>
-            <View style={{ flex: 1, minWidth: 0 }}>
-              <Text style={{ color: "#7C3AED", fontSize: r.fontSize.base, fontWeight: "700" }}>Legal & Privacy Hub</Text>
-              <Text style={{ color: colors.muted, fontSize: r.fontSize.xs, marginTop: 2 }} numberOfLines={1}>
-                Privacy · Terms · Cookies · Data Safety · Permissions
-              </Text>
-            </View>
-            <IconSymbol name="chevron.right" size={16} color="#7C3AED" style={{ flexShrink: 0 }} />
-          </TouchableOpacity>
+          </View>
         </View>
 
         {/* Footer */}

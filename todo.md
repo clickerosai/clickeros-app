@@ -127,3 +127,42 @@
 - [x] Context memory fix: always use latest form state, no stale data
 - [x] Expo Go mobile optimizations (keyboard, double-click prevention)
 - [x] Developer debug logs for payload, result, score, rejections
+
+## Bug Fixes (Full Audit)
+- [ ] Fix broken layouts (overflow, clipping, missing flex constraints)
+- [ ] Fix loading issues (missing error states, infinite spinners)
+- [ ] Fix crashes (missing icon mappings, undefined data access)
+- [ ] Fix slow responses (add request timeouts, optimistic UI)
+- [ ] Fix incorrect AI outputs (prompt grounding, fallback validation)
+- [ ] Fix mobile responsiveness (safe areas, keyboard avoidance)
+- [ ] Fix form validation (inline errors, required field checks)
+- [ ] Fix auth/session bugs (error handling, token refresh)
+
+## Complete User Flow (End-to-End)
+- [ ] Sign Up / Onboarding screen (OAuth + email, welcome, feature highlights)
+- [ ] Connect Accounts screen (Facebook, Google, TikTok, YouTube, LinkedIn)
+- [ ] Create Campaign flow (step-by-step wizard with validation)
+- [ ] Generate Ads integrated into campaign flow
+- [ ] Launch Campaign screen (review, budget, schedule, confirm)
+- [ ] Success/confirmation screen after launch
+- [ ] Navigation guard: redirect unauthenticated users to Sign Up
+- [ ] Persistent session handling (token refresh, logout)
+- [ ] Error boundaries on all screens
+- [ ] Empty states on all list screens
+
+## AI Quality Improvements
+- [ ] 7 industry campaign templates (eCommerce, Local, Real Estate, Coaches, Restaurants, SaaS, Fashion)
+- [ ] Upgraded prompt grounding with industry-specific context injection
+- [ ] Campaign memory (persist last campaign form values in AsyncStorage)
+- [ ] Relevance scoring UI with per-dimension breakdown bars
+- [ ] AI retry system (auto-retry up to 3x if score < threshold)
+- [ ] Ad tone selector with platform-aware recommendations
+- [ ] Generate Ads screen wired from Create Campaign flow
+- [ ] Launch Campaign screen with review, budget, schedule, confirm
+- [ ] Campaign success screen after launch
+
+## In-App Legal Pages
+- [x] Permission Disclosures screen (CAMERA, RECORD_AUDIO, READ_PHONE_STATE, GET_ACCOUNTS)
+- [x] Privacy Policy in-app screen
+- [x] Terms of Service in-app screen
+- [x] Update Settings to link all three pages
