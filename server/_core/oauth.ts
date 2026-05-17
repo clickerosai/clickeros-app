@@ -74,7 +74,7 @@ export function registerOAuthRoutes(app: Express) {
     try {
       const tokenResponse = await sdk.exchangeCodeForToken(code, state);
       const userInfo = await sdk.getUserInfo(tokenResponse.accessToken);
-      await syncUser(userInfo);
+      const user = await syncUser(userInfo);
       const sessionToken = await sdk.createSessionToken(userInfo.openId!, {
         name: userInfo.name || "",
         expiresInMs: ONE_YEAR_MS,
@@ -83,16 +83,49 @@ export function registerOAuthRoutes(app: Express) {
       const cookieOptions = getSessionCookieOptions(req);
       res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
 
-      // Redirect to the frontend URL (Expo web on port 8081)
-      // Cookie is set with parent domain so it works across both 3000 and 8081 subdomains
-      const frontendUrl =
+      // Build the clean frontend URL — strip ALL query params (?code=, ?state=, etc.)
+      // so the browser does not land on a URL with dangling OAuth params.
+      const rawFrontendUrl =
         process.env.EXPO_WEB_PREVIEW_URL ||
         process.env.EXPO_PACKAGER_PROXY_URL ||
         "http://localhost:8081";
-      res.redirect(302, frontendUrl);
+
+      // Parse the URL and strip query params to get a clean base URL
+      let cleanFrontendUrl: string;
+      try {
+        const parsed = new URL(rawFrontendUrl);
+        // Keep only the origin + pathname, drop any query string or hash
+        cleanFrontendUrl = `${parsed.origin}${parsed.pathname === "/" ? "" : parsed.pathname}`;
+      } catch {
+        cleanFrontendUrl = rawFrontendUrl.split("?")[0];
+      }
+
+      // Encode user data to pass to the frontend callback screen
+      const userPayload = Buffer.from(
+        JSON.stringify(buildUserResponse(user))
+      ).toString("base64");
+
+      // Redirect to the Expo web app's OAuth callback route with session info
+      // The callback screen will store the session and redirect to the home tab
+      const callbackUrl = `${cleanFrontendUrl}/oauth/callback?sessionToken=${encodeURIComponent(sessionToken)}&user=${encodeURIComponent(userPayload)}`;
+
+      console.log("[OAuth] Redirecting to frontend callback:", cleanFrontendUrl);
+      res.redirect(302, callbackUrl);
     } catch (error) {
       console.error("[OAuth] Callback failed", error);
-      res.status(500).json({ error: "OAuth callback failed" });
+      // On error, redirect to frontend with error param instead of showing raw JSON
+      const rawFrontendUrl =
+        process.env.EXPO_WEB_PREVIEW_URL ||
+        process.env.EXPO_PACKAGER_PROXY_URL ||
+        "http://localhost:8081";
+      let cleanFrontendUrl: string;
+      try {
+        const parsed = new URL(rawFrontendUrl);
+        cleanFrontendUrl = `${parsed.origin}${parsed.pathname === "/" ? "" : parsed.pathname}`;
+      } catch {
+        cleanFrontendUrl = rawFrontendUrl.split("?")[0];
+      }
+      res.redirect(302, `${cleanFrontendUrl}/oauth/callback?error=auth_failed`);
     }
   });
 
