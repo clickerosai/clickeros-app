@@ -51,6 +51,9 @@ export interface NotificationSettings {
   quietHoursEnabled: boolean;
   quietHoursStart: number; // 0-23 (hour of day, 24h format)
   quietHoursEnd: number;   // 0-23
+  // Digest & Weekly Report
+  digestHour: number;          // Hour to send daily digest (0-23), default 9
+  weeklyReportEnabled: boolean; // Send weekly Monday report
 }
 
 export const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettings = {
@@ -69,6 +72,8 @@ export const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettings = {
   quietHoursEnabled: false,
   quietHoursStart: 22, // 10 PM
   quietHoursEnd: 8,    // 8 AM
+  digestHour: 9,       // 9 AM
+  weeklyReportEnabled: true,
 };
 
 /**
@@ -532,6 +537,60 @@ export default function NotificationSettingsScreen() {
               🌙 Alerts will be silenced from {formatHour(settings.quietHoursStart)} to {formatHour(settings.quietHoursEnd)}. Urgent alerts may still appear.
             </Text>
           )}
+        </View>
+
+        {/* Digest Time & Weekly Report */}
+        <View style={{ paddingHorizontal: r.px, marginTop: 20, opacity: settings.enabled && settings.frequency === "daily" ? 1 : 0.4 }}>
+          <Text style={{ color: colors.muted, fontSize: r.fontSize.xs, fontWeight: "700", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 8 }}>
+            Daily Digest Time
+          </Text>
+          <Text style={{ color: colors.muted, fontSize: r.fontSize.sm, marginBottom: 10, lineHeight: 18 }}>
+            Send daily digest at: <Text style={{ color: colors.foreground, fontWeight: "600" }}>{formatHour(settings.digestHour)}</Text>
+          </Text>
+          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+            {[6, 7, 8, 9, 10, 11, 12].map((h) => {
+              const sel = settings.digestHour === h;
+              return (
+                <TouchableOpacity
+                  key={h}
+                  style={{ paddingHorizontal: 12, height: 40, borderRadius: 10, borderWidth: 1.5, borderColor: sel ? "#7C3AED" : colors.border, backgroundColor: sel ? "#7C3AED10" : colors.background, justifyContent: "center" }}
+                  onPress={() => handleSave({ ...settings, digestHour: h })}
+                  activeOpacity={0.7}
+                  disabled={!settings.enabled || settings.frequency !== "daily"}
+                >
+                  <Text style={{ color: sel ? "#7C3AED" : colors.muted, fontSize: r.fontSize.sm, fontWeight: sel ? "700" : "400" }}>{formatHour(h)}</Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+          {settings.frequency !== "daily" && (
+            <Text style={{ color: colors.muted, fontSize: r.fontSize.xs, marginTop: 6 }}>
+              Set frequency to "Daily Digest" to configure this.
+            </Text>
+          )}
+        </View>
+
+        {/* Weekly Report Toggle */}
+        <View style={{ paddingHorizontal: r.px, marginTop: 20, opacity: settings.enabled ? 1 : 0.4 }}>
+          <Text style={{ color: colors.muted, fontSize: r.fontSize.xs, fontWeight: "700", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 8 }}>
+            Weekly Report
+          </Text>
+          <View style={{ backgroundColor: colors.background, borderRadius: 14, borderWidth: 1, borderColor: colors.border, padding: r.isXs ? 14 : 16, flexDirection: "row", alignItems: "center", gap: 12 }}>
+            <Text style={{ fontSize: 18, flexShrink: 0 }}>📅</Text>
+            <View style={{ flex: 1, minWidth: 0 }}>
+              <Text style={{ color: colors.foreground, fontSize: r.fontSize.base, fontWeight: "600" }}>Monday Performance Report</Text>
+              <Text style={{ color: colors.muted, fontSize: r.fontSize.xs, marginTop: 1 }}>
+                Weekly summary every Monday at {formatHour(settings.digestHour)}: campaigns, ROAS, spend, top performers
+              </Text>
+            </View>
+            <Switch
+              value={settings.weeklyReportEnabled}
+              onValueChange={(v) => handleSave({ ...settings, weeklyReportEnabled: v })}
+              disabled={!settings.enabled}
+              trackColor={{ false: colors.border, true: "#7C3AED" }}
+              thumbColor={Platform.OS === "android" ? "#FFFFFF" : undefined}
+            />
+          </View>
         </View>
 
         {/* Reset Defaults */}

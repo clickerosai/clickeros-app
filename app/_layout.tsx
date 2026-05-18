@@ -26,6 +26,7 @@ import {
   setupAndroidChannels,
 } from "@/lib/notifications";
 import { WhatsNewModal } from "@/components/whats-new-modal";
+import { OfflineBanner } from "@/components/offline-banner";
 
 // Initialize notification handler at module level (required by expo-notifications)
 setupNotificationHandler();
@@ -232,6 +233,7 @@ export default function RootLayout() {
             <ToastBridge />
             <SessionGuard sessionExpiredRef={sessionExpiredRef} />
             <WhatsNewModal />
+            <OfflineBanner />
             <Stack screenOptions={{ headerShown: false }}>
               <Stack.Screen name="(tabs)" />
               {/* fullScreenModal prevents back-swipe to the stale ?code= URL */}

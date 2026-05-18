@@ -11,6 +11,15 @@
 import * as Notifications from "expo-notifications";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Platform } from "react-native";
+// Lazy import to avoid circular dependency — loaded at runtime
+let _getCampaignAlertOverrides: (() => Promise<Record<string, any>>) | null = null;
+async function getCampaignAlertOverrides(): Promise<Record<string, any>> {
+  if (!_getCampaignAlertOverrides) {
+    const mod = await import("../components/campaign-alert-sheet");
+    _getCampaignAlertOverrides = mod.getCampaignAlertOverrides;
+  }
+  return _getCampaignAlertOverrides!();
+}
 
 // ── Notification Handler (must be called at app root) ─────────────────────────
 export function setupNotificationHandler() {
@@ -183,19 +192,36 @@ export async function checkCampaignAlerts(
       : hour >= start && hour < end;  // same-day window
   })();
 
+  // Load all per-campaign overrides once before the loop
+  const campaignOverrides = await getCampaignAlertOverrides().catch(() => ({} as Record<string, any>));
+
   for (const campaign of campaigns) {
     if (campaign.status !== "Active" && campaign.status !== "Scaling") continue;
+
+    // Check per-campaign override — if override exists and alerts are disabled, skip
+    const override = campaignOverrides[campaign.id];
+    if (override && !override.enabled) continue;
 
     const roasValue = parseFloat(campaign.roas?.replace(/[^0-9.]/g, "") ?? "0");
     const spendValue = parseFloat(campaign.spend?.replace(/[^0-9.]/g, "") ?? "0");
     const budgetValue = parseFloat(campaign.budget?.replace(/[^0-9.]/g, "") ?? "0");
 
-    // ── ROAS Drop Alert ──────────────────────────────────────────────────────
-    if (roasValue > 0 && roasValue < config.roasDropThreshold) {
+    // Use per-campaign ROAS threshold if set, otherwise fall back to global
+    const effectiveRoasThreshold =
+      override?.roasDropThreshold != null
+        ? override.roasDropThreshold
+        : config.roasDropThreshold;
+
+    // Use per-campaign budget alert setting if set
+    const budgetAlertEnabled =
+      override != null ? override.budgetAlertEnabled : true;
+
+    // ── ROAS Drop Alert ────────────────────────────────────────────────────────────────────────
+    if (roasValue > 0 && roasValue < effectiveRoasThreshold) {
       const notification = await addNotification({
         type: "roas_drop",
         title: `⚠️ ROAS Drop — ${campaign.name}`,
-        body: `ROAS fell to ${campaign.roas} (below ${config.roasDropThreshold}x threshold). Consider pausing or optimizing.`,
+        body: `ROAS fell to ${campaign.roas} (below ${effectiveRoasThreshold}x threshold). Consider pausing or optimizing.`,
         campaignId: campaign.id,
         campaignName: campaign.name,
         data: { roas: roasValue, threshold: config.roasDropThreshold },
@@ -216,7 +242,7 @@ export async function checkCampaignAlerts(
     }
 
     // ── Budget Exhausted Alert ───────────────────────────────────────────────
-    if (budgetValue > 0 && spendValue > 0) {
+    if (budgetAlertEnabled && budgetValue > 0 && spendValue > 0) {
       const spendPercent = (spendValue / budgetValue) * 100;
       if (spendPercent >= config.budgetExhaustedPercent) {
         const notification = await addNotification({
@@ -293,7 +319,8 @@ export async function scheduleDailyDigest(
     roas: string;
     spend: string;
     status: string;
-  }>
+  }>,
+  digestHour: number = 9
 ): Promise<void> {
   if (Platform.OS === "web") return;
 
@@ -339,12 +366,12 @@ export async function scheduleDailyDigest(
     topCampaign ? `Top: ${topCampaign.name} (${topCampaign.roas})` : null,
   ].filter(Boolean).join(" · ");
 
-  // Schedule for 9 AM today (or tomorrow if it's already past 9 AM)
+  // Schedule for the configured digest hour (or tomorrow if already past)
   const now = new Date();
   const digestTime = new Date();
-  digestTime.setHours(9, 0, 0, 0);
+  digestTime.setHours(digestHour, 0, 0, 0);
   if (digestTime <= now) {
-    // Already past 9 AM today — schedule for tomorrow
+    // Already past the digest hour today — schedule for tomorrow
     digestTime.setDate(digestTime.getDate() + 1);
   }
 
@@ -366,6 +393,109 @@ export async function scheduleDailyDigest(
       categoryIdentifier: "system",
     },
     trigger: { type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL, seconds: secondsUntilDigest },
+  }).catch(() => {});
+}
+
+// ── Weekly Performance Report ───────────────────────────────────────────────
+
+const WEEKLY_REPORT_KEY = "@clickeros:weekly_report_scheduled";
+
+/**
+ * Schedule the weekly performance report for next Monday at the configured hour.
+ * Only schedules once per week — checks AsyncStorage to avoid duplicates.
+ *
+ * @param campaigns - Current campaign data for the summary
+ * @param digestHour - Hour to send the report (0-23), default 9
+ */
+export async function scheduleWeeklyReport(
+  campaigns: Array<{
+    id: string;
+    name: string;
+    roas: string;
+    spend: string;
+    budget: string;
+    status: string;
+  }>,
+  digestHour: number = 9
+): Promise<void> {
+  if (Platform.OS === "web") return;
+
+  const hasPermission = await getNotificationPermissionStatus();
+  if (hasPermission !== "granted") return;
+
+  // Only schedule once per week (ISO week number)
+  const now = new Date();
+  const weekKey = `${now.getFullYear()}-W${Math.ceil((now.getDate() - now.getDay() + 1) / 7)}`;
+  try {
+    const lastScheduled = await AsyncStorage.getItem(WEEKLY_REPORT_KEY);
+    if (lastScheduled === weekKey) return;
+    await AsyncStorage.setItem(WEEKLY_REPORT_KEY, weekKey);
+  } catch {}
+
+  // Build weekly summary
+  const activeCampaigns = campaigns.filter(
+    (c) => c.status === "Active" || c.status === "Scaling"
+  );
+
+  const roasValues = campaigns
+    .map((c) => parseFloat(c.roas?.replace(/[^0-9.]/g, "") ?? "0"))
+    .filter((v) => v > 0);
+
+  const sortedByRoas = [...campaigns].sort((a, b) => {
+    const ra = parseFloat(a.roas?.replace(/[^0-9.]/g, "") ?? "0");
+    const rb = parseFloat(b.roas?.replace(/[^0-9.]/g, "") ?? "0");
+    return rb - ra;
+  });
+
+  const bestRoas = sortedByRoas[0];
+  const worstRoas = sortedByRoas[sortedByRoas.length - 1];
+  const top3 = sortedByRoas.slice(0, 3);
+
+  const totalSpend = campaigns
+    .map((c) => parseFloat(c.spend?.replace(/[^0-9.]/g, "") ?? "0"))
+    .reduce((a, b) => a + b, 0);
+
+  const totalBudget = campaigns
+    .map((c) => parseFloat(c.budget?.replace(/[^0-9.]/g, "") ?? "0"))
+    .reduce((a, b) => a + b, 0);
+
+  const avgRoas = roasValues.length > 0
+    ? (roasValues.reduce((a, b) => a + b, 0) / roasValues.length).toFixed(1)
+    : "N/A";
+
+  const title = `📊 Weekly Performance Report`;
+  const body = [
+    `${activeCampaigns.length} active campaigns`,
+    `Avg ROAS: ${avgRoas}x`,
+    `Spend: $${totalSpend.toFixed(0)} / $${totalBudget.toFixed(0)}`,
+    bestRoas ? `Best: ${bestRoas.name} (${bestRoas.roas})` : null,
+    worstRoas && worstRoas.id !== bestRoas?.id ? `Needs attention: ${worstRoas.name} (${worstRoas.roas})` : null,
+  ].filter(Boolean).join(" · ");
+
+  // Store as in-app notification
+  await addNotification({
+    type: "system",
+    title,
+    body,
+  });
+
+  // Find next Monday
+  const nextMonday = new Date();
+  const dayOfWeek = nextMonday.getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
+  const daysUntilMonday = dayOfWeek === 1 ? 7 : (8 - dayOfWeek) % 7 || 7;
+  nextMonday.setDate(nextMonday.getDate() + daysUntilMonday);
+  nextMonday.setHours(digestHour, 0, 0, 0);
+
+  const secondsUntilMonday = Math.floor((nextMonday.getTime() - now.getTime()) / 1000);
+
+  await Notifications.scheduleNotificationAsync({
+    content: {
+      title,
+      body,
+      data: { type: "weekly_report" },
+      categoryIdentifier: "system",
+    },
+    trigger: { type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL, seconds: secondsUntilMonday },
   }).catch(() => {});
 }
 

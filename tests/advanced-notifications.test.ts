@@ -197,9 +197,9 @@ describe("Daily Performance Digest", () => {
     expect(notifContent).toContain("topCampaign");
   });
 
-  it("schedules for 9 AM (or tomorrow if already past 9 AM)", () => {
-    expect(notifContent).toContain("setHours(9, 0, 0, 0)");
-    expect(notifContent).toContain("Already past 9 AM today");
+  it("schedules for the configured digest hour (or tomorrow if already past)", () => {
+    expect(notifContent).toContain("digestTime.setHours(digestHour");
+    expect(notifContent).toContain("Already past the digest hour today");
     expect(notifContent).toContain("setDate(digestTime.getDate() + 1)");
   });
 

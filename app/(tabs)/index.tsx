@@ -21,6 +21,7 @@ import {
   getUnreadCount,
   checkCampaignAlerts,
   scheduleDailyDigest,
+  scheduleWeeklyReport,
   getNotificationPermissionStatus,
   requestNotificationPermissions,
 } from "@/lib/notifications";
@@ -184,7 +185,23 @@ export default function DashboardScreen() {
               roas: c.roas,
               spend: c.spend,
               status: c.status,
-            }))
+            })),
+            notifSettings.digestHour ?? 9
+          ).catch(() => {});
+        }
+
+        // Schedule weekly report if enabled
+        if (notifSettings.weeklyReportEnabled) {
+          scheduleWeeklyReport(
+            freshCampaigns.data.map((c) => ({
+              id: c.id,
+              name: c.name,
+              roas: c.roas,
+              spend: c.spend,
+              budget: c.budget,
+              status: c.status,
+            })),
+            notifSettings.digestHour ?? 9
           ).catch(() => {});
         }
       }

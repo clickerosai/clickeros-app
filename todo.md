@@ -197,3 +197,14 @@
 - [x] Quiet hours (Do Not Disturb) in Notification Settings
 - [x] Per-campaign alert overrides (custom ROAS threshold per campaign)
 - [x] Daily performance digest (scheduled 9 AM push summary)
+
+## Final Polish & Missing Features
+- [x] Wire per-campaign overrides into checkCampaignAlerts loop
+- [x] Weekly performance report (scheduleWeeklyReport, every Monday 9 AM)
+- [x] Digest time customization in Notification Settings (7 AM–10 AM picker)
+- [x] Error boundary component for screen-level crash recovery
+- [x] Empty states on all list screens (Campaigns, Analytics, Notifications)
+- [x] Offline/network error banner
+- [x] Loading skeleton for Dashboard stats cards
+- [x] App version display in Settings footer
+- [x] Deep link handling for notification taps (navigate to relevant screen)
