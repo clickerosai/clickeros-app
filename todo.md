@@ -166,3 +166,8 @@
 - [x] Privacy Policy in-app screen
 - [x] Terms of Service in-app screen
 - [x] Update Settings to link all three pages
+
+## Auth & Session Polish
+- [x] Test full OAuth login flow end-to-end
+- [x] Branded loading splash screen during session establishment
+- [x] Global UNAUTHORIZED session expiry handler in root layout

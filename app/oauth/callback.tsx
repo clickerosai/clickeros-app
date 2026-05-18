@@ -1,6 +1,6 @@
-import { ThemedView } from "@/components/themed-view";
 import * as Api from "@/lib/_core/api";
 import * as Auth from "@/lib/_core/auth";
+import { AuthSplash } from "@/components/auth-splash";
 import * as Linking from "expo-linking";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
@@ -91,7 +91,6 @@ export default function OAuthCallback() {
         }
 
         // ── Case 3: Raw code + state (native deep link or fallback web) ───
-        // The server should have handled this, but we support it as a fallback.
         let code = params.code ?? null;
         let state = params.state ?? null;
 
@@ -106,14 +105,12 @@ export default function OAuthCallback() {
               state = urlObj.searchParams.get("state");
               const token = urlObj.searchParams.get("sessionToken");
               if (token) {
-                // Deep link included a session token — use it directly
                 await Auth.setSessionToken(token);
                 setStatus("success");
                 setTimeout(() => router.replace("/(tabs)"), 800);
                 return;
               }
             } catch {
-              // Relative URL fallback
               const match = initialUrl.match(/[?&]code=([^&]+)/);
               const stateMatch = initialUrl.match(/[?&]state=([^&]+)/);
               if (match) code = decodeURIComponent(match[1]);
@@ -172,70 +169,65 @@ export default function OAuthCallback() {
     handleCallback();
   }, []); // Empty deps — run once only
 
+  // ── Processing: Show branded splash screen ────────────────────────────────
+  if (status === "processing") {
+    return (
+      <AuthSplash
+        message="Signing you in…"
+        subMessage="Setting up your dashboard"
+      />
+    );
+  }
+
+  // ── Success: Brief confirmation before redirect ───────────────────────────
+  if (status === "success") {
+    return (
+      <AuthSplash
+        message="Welcome to Clickeros AI! ✅"
+        subMessage="Loading your dashboard…"
+      />
+    );
+  }
+
+  // ── Error: Show error with retry ─────────────────────────────────────────
   return (
-    <SafeAreaView style={{ flex: 1 }} edges={["top", "bottom", "left", "right"]}>
-      <ThemedView style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 24 }}>
-        {status === "processing" && (
-          <View style={{ alignItems: "center", gap: 16 }}>
-            <ActivityIndicator size="large" color="#7C3AED" />
-            <Text style={{ fontSize: 16, textAlign: "center", color: "#64748B", lineHeight: 24 }}>
-              Completing sign-in…
-            </Text>
-            <Text style={{ fontSize: 13, textAlign: "center", color: "#94A3B8" }}>
-              Please wait, this only takes a moment.
-            </Text>
-          </View>
-        )}
-
-        {status === "success" && (
-          <View style={{ alignItems: "center", gap: 12 }}>
-            <Text style={{ fontSize: 32 }}>✅</Text>
-            <Text style={{ fontSize: 18, fontWeight: "700", color: "#22C55E" }}>
-              Signed in successfully!
-            </Text>
-            <Text style={{ fontSize: 14, color: "#64748B", textAlign: "center" }}>
-              Redirecting to your dashboard…
-            </Text>
-            <ActivityIndicator size="small" color="#7C3AED" style={{ marginTop: 8 }} />
-          </View>
-        )}
-
-        {status === "error" && (
-          <View style={{ alignItems: "center", gap: 16, maxWidth: 320 }}>
-            <Text style={{ fontSize: 32 }}>❌</Text>
-            <Text style={{ fontSize: 18, fontWeight: "700", color: "#EF4444", textAlign: "center" }}>
-              Sign-in Failed
-            </Text>
-            <Text style={{ fontSize: 14, color: "#64748B", textAlign: "center", lineHeight: 22 }}>
-              {errorMessage || "Something went wrong. Please try again."}
-            </Text>
-            <TouchableOpacity
-              style={{
-                backgroundColor: "#7C3AED",
-                borderRadius: 12,
-                paddingHorizontal: 24,
-                paddingVertical: 14,
-                marginTop: 8,
-              }}
-              onPress={() => router.replace("/(tabs)")}
-              activeOpacity={0.8}
-            >
-              <Text style={{ color: "#FFFFFF", fontSize: 15, fontWeight: "700" }}>
-                Go to Dashboard
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={{ marginTop: 4, minHeight: 44, justifyContent: "center" }}
-              onPress={() => router.replace("/signup" as any)}
-              activeOpacity={0.7}
-            >
-              <Text style={{ color: "#7C3AED", fontSize: 14, fontWeight: "600" }}>
-                Try signing in again
-              </Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      </ThemedView>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#7C3AED" }} edges={["top", "bottom", "left", "right"]}>
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 32 }}>
+        <Text style={{ fontSize: 48, marginBottom: 16 }}>❌</Text>
+        <Text style={{ fontSize: 22, fontWeight: "800", color: "#FFFFFF", textAlign: "center", marginBottom: 10 }}>
+          Sign-in Failed
+        </Text>
+        <Text style={{ fontSize: 15, color: "rgba(255,255,255,0.75)", textAlign: "center", lineHeight: 24, marginBottom: 32, maxWidth: 300 }}>
+          {errorMessage || "Something went wrong. Please try again."}
+        </Text>
+        <TouchableOpacity
+          style={{
+            backgroundColor: "#FFFFFF",
+            borderRadius: 14,
+            paddingHorizontal: 28,
+            paddingVertical: 16,
+            marginBottom: 14,
+            width: "100%",
+            maxWidth: 280,
+            alignItems: "center",
+          }}
+          onPress={() => router.replace("/signup" as any)}
+          activeOpacity={0.85}
+        >
+          <Text style={{ color: "#7C3AED", fontSize: 16, fontWeight: "700" }}>
+            Try Again
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={{ minHeight: 44, justifyContent: "center" }}
+          onPress={() => router.replace("/(tabs)")}
+          activeOpacity={0.7}
+        >
+          <Text style={{ color: "rgba(255,255,255,0.7)", fontSize: 14, fontWeight: "500" }}>
+            Continue without signing in
+          </Text>
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 }
