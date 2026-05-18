@@ -171,3 +171,9 @@
 - [x] Test full OAuth login flow end-to-end
 - [x] Branded loading splash screen during session establishment
 - [x] Global UNAUTHORIZED session expiry handler in root layout
+
+## Auth UX Improvements
+- [x] Global Toast notification component
+- [x] Session expired toast before redirect
+- [x] Biometric re-authentication (Face ID / fingerprint) on native
+- [x] Remember Me checkbox on Sign Up with silent token refresh

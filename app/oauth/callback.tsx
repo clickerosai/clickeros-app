@@ -6,11 +6,14 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Platform, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { storeBiometricToken, getRememberMe } from "@/lib/biometric-auth";
+import { useToast } from "@/components/toast";
 
 type Status = "processing" | "success" | "error";
 
 export default function OAuthCallback() {
   const router = useRouter();
+  const { showToast } = useToast();
   const params = useLocalSearchParams<{
     code?: string;
     state?: string;
@@ -21,14 +24,14 @@ export default function OAuthCallback() {
 
   const [status, setStatus] = useState<Status>("processing");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const hasRun = useRef(false); // Prevent double-execution in React strict mode
+  const hasRun = useRef(false);
 
   useEffect(() => {
     if (hasRun.current) return;
     hasRun.current = true;
 
     const handleCallback = async () => {
-      console.log("[OAuth] Callback triggered with params:", {
+      console.log("[OAuth] Callback triggered:", {
         hasCode: !!params.code,
         hasState: !!params.state,
         hasError: !!params.error,
@@ -37,9 +40,8 @@ export default function OAuthCallback() {
       });
 
       try {
-        // ── Case 1: Error from OAuth provider ─────────────────────────────
+        // ── Case 1: Error ──────────────────────────────────────────────────
         if (params.error) {
-          console.error("[OAuth] Provider returned error:", params.error);
           setStatus("error");
           setErrorMessage(
             params.error === "access_denied"
@@ -51,12 +53,11 @@ export default function OAuthCallback() {
           return;
         }
 
-        // ── Case 2: Server already exchanged the code and passed sessionToken ──
-        // This is the PRIMARY web flow: server redirects to /oauth/callback?sessionToken=...
+        // ── Case 2: sessionToken from server redirect (primary web flow) ──
         if (params.sessionToken) {
-          console.log("[OAuth] Session token received from server redirect");
           await Auth.setSessionToken(params.sessionToken);
 
+          // Parse and store user info
           if (params.user) {
             try {
               const decoded =
@@ -64,23 +65,27 @@ export default function OAuthCallback() {
                   ? atob(decodeURIComponent(params.user))
                   : Buffer.from(decodeURIComponent(params.user), "base64").toString("utf-8");
               const userData = JSON.parse(decoded);
-              const userInfo: Auth.User = {
+              await Auth.setUserInfo({
                 id: userData.id,
                 openId: userData.openId,
                 name: userData.name,
                 email: userData.email,
                 loginMethod: userData.loginMethod,
                 lastSignedIn: new Date(userData.lastSignedIn || Date.now()),
-              };
-              await Auth.setUserInfo(userInfo);
-              console.log("[OAuth] User stored:", userInfo.email);
+              });
             } catch (err) {
               console.warn("[OAuth] Could not parse user data:", err);
-              // Non-fatal — session token is already stored
             }
           }
 
-          // Clean the URL before redirecting (remove ?sessionToken= from browser history)
+          // Store biometric token if Remember Me is enabled
+          const rememberMe = await getRememberMe();
+          if (rememberMe && Platform.OS !== "web") {
+            await storeBiometricToken(params.sessionToken);
+            console.log("[OAuth] Biometric token stored for future sign-in");
+          }
+
+          // Clean URL
           if (Platform.OS === "web" && typeof window !== "undefined") {
             window.history.replaceState({}, "", "/");
           }
@@ -90,14 +95,12 @@ export default function OAuthCallback() {
           return;
         }
 
-        // ── Case 3: Raw code + state (native deep link or fallback web) ───
+        // ── Case 3: Raw code + state (native deep link fallback) ──────────
         let code = params.code ?? null;
         let state = params.state ?? null;
 
-        // If not in params, try Linking (native deep link)
         if (!code || !state) {
           const initialUrl = await Linking.getInitialURL();
-          console.log("[OAuth] Checking Linking.getInitialURL():", initialUrl);
           if (initialUrl) {
             try {
               const urlObj = new URL(initialUrl);
@@ -106,6 +109,10 @@ export default function OAuthCallback() {
               const token = urlObj.searchParams.get("sessionToken");
               if (token) {
                 await Auth.setSessionToken(token);
+                const rememberMe = await getRememberMe();
+                if (rememberMe && Platform.OS !== "web") {
+                  await storeBiometricToken(token);
+                }
                 setStatus("success");
                 setTimeout(() => router.replace("/(tabs)"), 800);
                 return;
@@ -120,35 +127,33 @@ export default function OAuthCallback() {
         }
 
         if (!code || !state) {
-          console.error("[OAuth] No code, state, or sessionToken found");
           setStatus("error");
           setErrorMessage("Authentication parameters missing. Please try signing in again.");
           return;
         }
 
-        // Exchange code for token via the mobile endpoint
-        console.log("[OAuth] Exchanging code for session token...");
         const result = await Api.exchangeOAuthCode(code, state);
-
-        if (!result.sessionToken) {
-          throw new Error("No session token returned from server");
-        }
+        if (!result.sessionToken) throw new Error("No session token returned from server");
 
         await Auth.setSessionToken(result.sessionToken);
 
         if (result.user) {
-          const userInfo: Auth.User = {
+          await Auth.setUserInfo({
             id: result.user.id,
             openId: result.user.openId,
             name: result.user.name,
             email: result.user.email,
             loginMethod: result.user.loginMethod,
             lastSignedIn: new Date(result.user.lastSignedIn || Date.now()),
-          };
-          await Auth.setUserInfo(userInfo);
+          });
         }
 
-        // Clean URL on web
+        // Store biometric token if Remember Me is enabled
+        const rememberMe = await getRememberMe();
+        if (rememberMe && Platform.OS !== "web") {
+          await storeBiometricToken(result.sessionToken);
+        }
+
         if (Platform.OS === "web" && typeof window !== "undefined") {
           window.history.replaceState({}, "", "/");
         }
@@ -159,37 +164,25 @@ export default function OAuthCallback() {
         console.error("[OAuth] Callback error:", err);
         setStatus("error");
         setErrorMessage(
-          err instanceof Error
-            ? err.message
-            : "Authentication failed. Please try again."
+          err instanceof Error ? err.message : "Authentication failed. Please try again."
         );
       }
     };
 
     handleCallback();
-  }, []); // Empty deps — run once only
+  }, []);
 
-  // ── Processing: Show branded splash screen ────────────────────────────────
+  // ── Processing: Branded splash ────────────────────────────────────────────
   if (status === "processing") {
-    return (
-      <AuthSplash
-        message="Signing you in…"
-        subMessage="Setting up your dashboard"
-      />
-    );
+    return <AuthSplash message="Signing you in…" subMessage="Setting up your dashboard" />;
   }
 
-  // ── Success: Brief confirmation before redirect ───────────────────────────
+  // ── Success: Brief confirmation ───────────────────────────────────────────
   if (status === "success") {
-    return (
-      <AuthSplash
-        message="Welcome to Clickeros AI! ✅"
-        subMessage="Loading your dashboard…"
-      />
-    );
+    return <AuthSplash message="Welcome to Clickeros AI! ✅" subMessage="Loading your dashboard…" />;
   }
 
-  // ── Error: Show error with retry ─────────────────────────────────────────
+  // ── Error: Show error with retry ──────────────────────────────────────────
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#7C3AED" }} edges={["top", "bottom", "left", "right"]}>
       <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 32 }}>
@@ -201,22 +194,11 @@ export default function OAuthCallback() {
           {errorMessage || "Something went wrong. Please try again."}
         </Text>
         <TouchableOpacity
-          style={{
-            backgroundColor: "#FFFFFF",
-            borderRadius: 14,
-            paddingHorizontal: 28,
-            paddingVertical: 16,
-            marginBottom: 14,
-            width: "100%",
-            maxWidth: 280,
-            alignItems: "center",
-          }}
+          style={{ backgroundColor: "#FFFFFF", borderRadius: 14, paddingHorizontal: 28, paddingVertical: 16, marginBottom: 14, width: "100%", maxWidth: 280, alignItems: "center" }}
           onPress={() => router.replace("/signup" as any)}
           activeOpacity={0.85}
         >
-          <Text style={{ color: "#7C3AED", fontSize: 16, fontWeight: "700" }}>
-            Try Again
-          </Text>
+          <Text style={{ color: "#7C3AED", fontSize: 16, fontWeight: "700" }}>Try Again</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={{ minHeight: 44, justifyContent: "center" }}

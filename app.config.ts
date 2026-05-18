@@ -79,6 +79,12 @@ const config: ExpoConfig = {
   plugins: [
     "expo-router",
     [
+      "expo-local-authentication",
+      {
+        faceIDPermission: "Allow Clickeros AI to use Face ID for quick sign-in."
+      }
+    ],
+    [
       "expo-camera",
       {
         cameraPermission: "Allow $(PRODUCT_NAME) to access your camera to capture photos and videos for ad creatives and QR code scanning.",

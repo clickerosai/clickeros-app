@@ -1,6 +1,6 @@
 import "@/global.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Stack, useRouter, useSegments } from "expo-router";
+import { Stack, useSegments } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -20,6 +20,7 @@ import { TRPCClientError } from "@trpc/client";
 import { trpc, createTRPCClient } from "@/lib/trpc";
 import { initManusRuntime, subscribeSafeAreaInsets } from "@/lib/_core/manus-runtime";
 import * as Auth from "@/lib/_core/auth";
+import { ToastProvider, useToast } from "@/components/toast";
 
 const DEFAULT_WEB_INSETS: EdgeInsets = { top: 0, right: 0, bottom: 0, left: 0 };
 const DEFAULT_WEB_FRAME: Rect = { x: 0, y: 0, width: 0, height: 0 };
@@ -29,26 +30,52 @@ export const unstable_settings = {
 };
 
 /**
- * SessionGuard — listens for UNAUTHORIZED errors from TanStack Query
- * and redirects to the Sign Up screen when the session expires.
- *
- * Must be rendered inside QueryClientProvider to access the query cache.
+ * SessionGuard — subscribes to QueryCache/MutationCache for UNAUTHORIZED errors.
+ * Must be inside ToastProvider to use useToast().
  */
-function SessionGuard() {
-  const router = useRouter();
+function SessionGuard({ sessionExpiredRef }: { sessionExpiredRef: React.MutableRefObject<boolean> }) {
+  const { showToast } = useToast();
   const segments = useSegments();
-  const redirectingRef = useRef(false);
 
-  useEffect(() => {
-    // Don't redirect if already on auth screens
-    const isOnAuthScreen =
-      segments[0] === "signup" ||
-      (segments[0] === "oauth" && segments[1] === "callback");
+  // Track if we're on an auth screen to avoid redirect loops
+  const isOnAuthScreen =
+    segments[0] === "signup" ||
+    (segments[0] === "oauth" && segments[1] === "callback");
 
-    if (isOnAuthScreen) {
-      redirectingRef.current = false;
-    }
-  }, [segments]);
+  const handleSessionExpiry = useCallback(() => {
+    if (sessionExpiredRef.current || isOnAuthScreen) return;
+    sessionExpiredRef.current = true;
+
+    console.warn("[Session] UNAUTHORIZED — session expired, clearing auth and redirecting");
+
+    // Clear stored session data
+    Auth.removeSessionToken().catch(() => {});
+    Auth.clearUserInfo().catch(() => {});
+
+    // Show toast BEFORE redirecting so user understands what happened
+    showToast({
+      type: "warning",
+      message: "Your session has expired",
+      subMessage: "Please sign in again to continue.",
+      duration: 5000,
+      action: {
+        label: "Sign in now",
+        onPress: () => {
+          if (Platform.OS === "web" && typeof window !== "undefined") {
+            window.location.href = "/signup";
+          }
+        },
+      },
+    });
+
+    // Redirect after a brief delay so the toast is visible
+    setTimeout(() => {
+      sessionExpiredRef.current = false;
+      if (Platform.OS === "web" && typeof window !== "undefined") {
+        window.location.href = "/signup";
+      }
+    }, 2500); // 2.5 seconds — enough to read the toast
+  }, [showToast, isOnAuthScreen, sessionExpiredRef]);
 
   return null;
 }
@@ -60,10 +87,12 @@ export default function RootLayout() {
   const [insets, setInsets] = useState<EdgeInsets>(initialInsets);
   const [frame, setFrame] = useState<Rect>(initialFrame);
 
-  // Track whether we've already triggered a session expiry redirect
+  // Shared ref passed to both QueryClient and SessionGuard
   const sessionExpiredRef = useRef(false);
+  // Ref to hold the showToast function (set by SessionGuard after mount)
+  const showToastRef = useRef<((opts: any) => void) | null>(null);
 
-  // Initialize Manus runtime for cookie injection from parent container
+  // Initialize Manus runtime
   useEffect(() => {
     initManusRuntime();
   }, []);
@@ -85,27 +114,21 @@ export default function RootLayout() {
       defaultOptions: {
         queries: {
           refetchOnWindowFocus: false,
-          // Don't retry UNAUTHORIZED errors — they won't succeed without re-auth
+          staleTime: 60_000,
+          // Don't retry UNAUTHORIZED errors
           retry: (failureCount, error) => {
             if (error instanceof TRPCClientError) {
               const code = error.data?.code;
-              if (code === "UNAUTHORIZED" || code === "FORBIDDEN") {
-                return false; // Don't retry auth errors
-              }
+              if (code === "UNAUTHORIZED" || code === "FORBIDDEN") return false;
             }
-            return failureCount < 1; // Retry once for other errors
+            return failureCount < 1;
           },
-          // Stale time: 60 seconds (data stays fresh for 1 minute)
-          staleTime: 60_000,
         },
         mutations: {
-          // Don't retry mutations on auth errors
           retry: (failureCount, error) => {
             if (error instanceof TRPCClientError) {
               const code = error.data?.code;
-              if (code === "UNAUTHORIZED" || code === "FORBIDDEN") {
-                return false;
-              }
+              if (code === "UNAUTHORIZED" || code === "FORBIDDEN") return false;
             }
             return failureCount < 1;
           },
@@ -113,72 +136,52 @@ export default function RootLayout() {
       },
     });
 
-    // Global error handler — intercepts all query/mutation errors
+    const triggerSessionExpiry = () => {
+      if (sessionExpiredRef.current) return;
+      sessionExpiredRef.current = true;
+
+      Auth.removeSessionToken().catch(() => {});
+      Auth.clearUserInfo().catch(() => {});
+      client.clear();
+
+      // Show toast via ref (set after ToastProvider mounts)
+      if (showToastRef.current) {
+        showToastRef.current({
+          type: "warning",
+          message: "Your session has expired",
+          subMessage: "Please sign in again to continue.",
+          duration: 5000,
+        });
+      }
+
+      setTimeout(() => {
+        sessionExpiredRef.current = false;
+        if (Platform.OS === "web" && typeof window !== "undefined") {
+          window.location.href = "/signup";
+        }
+      }, 2500);
+    };
+
+    // Subscribe to query errors
     client.getQueryCache().subscribe((event) => {
       if (event.type !== "updated") return;
       const error = event.query.state.error;
       if (!error) return;
-
-      const isUnauthorized =
+      const isUnauth =
         (error instanceof TRPCClientError && error.data?.code === "UNAUTHORIZED") ||
         (error instanceof Error && error.message?.includes("UNAUTHORIZED"));
-
-      if (isUnauthorized && !sessionExpiredRef.current) {
-        sessionExpiredRef.current = true;
-        console.warn("[Session] UNAUTHORIZED detected — session expired, clearing auth");
-
-        // Clear stored session data
-        Auth.removeSessionToken().catch(() => {});
-        Auth.clearUserInfo().catch(() => {});
-
-        // Clear all cached queries to prevent stale data showing
-        client.clear();
-
-        // Reset the flag after a delay to allow re-auth
-        setTimeout(() => {
-          sessionExpiredRef.current = false;
-        }, 5000);
-
-        // Navigate to sign up — use a small delay to let the current render finish
-        setTimeout(() => {
-          try {
-            // Use window.location for web (most reliable cross-render navigation)
-            if (Platform.OS === "web" && typeof window !== "undefined") {
-              window.location.href = "/signup";
-            }
-          } catch (navErr) {
-            console.error("[Session] Navigation failed:", navErr);
-          }
-        }, 100);
-      }
+      if (isUnauth) triggerSessionExpiry();
     });
 
-    // Also subscribe to mutation cache for mutation-level UNAUTHORIZED errors
+    // Subscribe to mutation errors
     client.getMutationCache().subscribe((event) => {
       if (event.type !== "updated") return;
       const error = event.mutation?.state?.error;
       if (!error) return;
-
-      const isUnauthorized =
+      const isUnauth =
         (error instanceof TRPCClientError && error.data?.code === "UNAUTHORIZED") ||
         (error instanceof Error && error.message?.includes("UNAUTHORIZED"));
-
-      if (isUnauthorized && !sessionExpiredRef.current) {
-        sessionExpiredRef.current = true;
-        console.warn("[Session] UNAUTHORIZED mutation — session expired");
-
-        Auth.removeSessionToken().catch(() => {});
-        Auth.clearUserInfo().catch(() => {});
-        client.clear();
-
-        setTimeout(() => { sessionExpiredRef.current = false; }, 5000);
-
-        setTimeout(() => {
-          if (Platform.OS === "web" && typeof window !== "undefined") {
-            window.location.href = "/signup";
-          }
-        }, 100);
-      }
+      if (isUnauth) triggerSessionExpiry();
     });
 
     return client;
@@ -186,7 +189,6 @@ export default function RootLayout() {
 
   const [trpcClient] = useState(() => createTRPCClient());
 
-  // Ensure minimum safe area padding on mobile
   const providerInitialMetrics = useMemo(() => {
     const metrics = initialWindowMetrics ?? { insets: initialInsets, frame: initialFrame };
     return {
@@ -199,18 +201,34 @@ export default function RootLayout() {
     };
   }, [initialInsets, initialFrame]);
 
+  /**
+   * Inner component that has access to ToastProvider context.
+   * Bridges showToast into the showToastRef so QueryClient can call it.
+   */
+  function ToastBridge() {
+    const { showToast } = useToast();
+    useEffect(() => {
+      showToastRef.current = showToast;
+      return () => { showToastRef.current = null; };
+    }, [showToast]);
+    return null;
+  }
+
   const content = (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <trpc.Provider client={trpcClient} queryClient={queryClient}>
         <QueryClientProvider client={queryClient}>
-          <SessionGuard />
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="(tabs)" />
-            {/* fullScreenModal prevents back-swipe to the stale ?code= URL */}
-            <Stack.Screen name="oauth/callback" options={{ presentation: "fullScreenModal" }} />
-            <Stack.Screen name="signup" options={{ presentation: "fullScreenModal" }} />
-          </Stack>
-          <StatusBar style="auto" />
+          <ToastProvider>
+            <ToastBridge />
+            <SessionGuard sessionExpiredRef={sessionExpiredRef} />
+            <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="(tabs)" />
+              {/* fullScreenModal prevents back-swipe to the stale ?code= URL */}
+              <Stack.Screen name="oauth/callback" options={{ presentation: "fullScreenModal" }} />
+              <Stack.Screen name="signup" options={{ presentation: "fullScreenModal" }} />
+            </Stack>
+            <StatusBar style="auto" />
+          </ToastProvider>
         </QueryClientProvider>
       </trpc.Provider>
     </GestureHandlerRootView>

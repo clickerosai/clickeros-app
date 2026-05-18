@@ -188,7 +188,7 @@ describe("Root Layout — Session Expiry Handler", () => {
 
   it("has SessionGuard component rendered inside providers", () => {
     expect(layoutContent).toContain("SessionGuard");
-    expect(layoutContent).toContain("<SessionGuard />");
+    expect(layoutContent).toContain("<SessionGuard");
   });
 
   it("uses fullScreenModal for oauth/callback to prevent back-swipe", () => {
