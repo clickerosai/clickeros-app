@@ -20,6 +20,7 @@ import { IconSymbol } from "@/components/ui/icon-symbol";
 import {
   getUnreadCount,
   checkCampaignAlerts,
+  scheduleDailyDigest,
   getNotificationPermissionStatus,
   requestNotificationPermissions,
 } from "@/lib/notifications";
@@ -163,11 +164,29 @@ export default function DashboardScreen() {
           {
             roasDropThreshold: notifSettings.roasDropThreshold,
             budgetExhaustedPercent: notifSettings.budgetExhaustedPercent,
+          },
+          {
+            enabled: notifSettings.quietHoursEnabled,
+            start: notifSettings.quietHoursStart,
+            end: notifSettings.quietHoursEnd,
           }
         ).then(() => {
           // Refresh unread count after alerts may have been added
           getUnreadCount().then(setUnreadNotifCount);
         }).catch(() => {});
+
+        // Schedule daily digest if frequency is set to "daily"
+        if (notifSettings.frequency === "daily") {
+          scheduleDailyDigest(
+            freshCampaigns.data.map((c) => ({
+              id: c.id,
+              name: c.name,
+              roas: c.roas,
+              spend: c.spend,
+              status: c.status,
+            }))
+          ).catch(() => {});
+        }
       }
     }
   }, [statsQuery, campaignsQuery]);

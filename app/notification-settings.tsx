@@ -47,6 +47,10 @@ export interface NotificationSettings {
   budgetExhaustedPercent: number;
   // Frequency
   frequency: "immediate" | "hourly" | "daily";
+  // Quiet Hours (Do Not Disturb)
+  quietHoursEnabled: boolean;
+  quietHoursStart: number; // 0-23 (hour of day, 24h format)
+  quietHoursEnd: number;   // 0-23
 }
 
 export const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettings = {
@@ -62,7 +66,37 @@ export const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettings = {
   roasDropThreshold: 2.0,
   budgetExhaustedPercent: 90,
   frequency: "immediate",
+  quietHoursEnabled: false,
+  quietHoursStart: 22, // 10 PM
+  quietHoursEnd: 8,    // 8 AM
 };
+
+/**
+ * Check if the current time falls within quiet hours.
+ * Returns true if notifications should be suppressed.
+ */
+export function isQuietHours(settings: NotificationSettings): boolean {
+  if (!settings.quietHoursEnabled) return false;
+  const now = new Date();
+  const currentHour = now.getHours();
+  const { quietHoursStart: start, quietHoursEnd: end } = settings;
+  // Handle overnight window (e.g., 22 to 8)
+  if (start > end) {
+    return currentHour >= start || currentHour < end;
+  }
+  // Same-day window (e.g., 13 to 17)
+  return currentHour >= start && currentHour < end;
+}
+
+/**
+ * Format a 24h hour number to a human-readable 12h string.
+ */
+export function formatHour(hour: number): string {
+  if (hour === 0)  return "12:00 AM";
+  if (hour === 12) return "12:00 PM";
+  if (hour < 12)   return `${hour}:00 AM`;
+  return `${hour - 12}:00 PM`;
+}
 
 export async function getNotificationSettings(): Promise<NotificationSettings> {
   try {
@@ -423,6 +457,81 @@ export default function NotificationSettingsScreen() {
               </View>
             ))}
           </View>
+        </View>
+
+        {/* Quiet Hours (Do Not Disturb) */}
+        <View style={{ paddingHorizontal: r.px, marginTop: 20, opacity: settings.enabled ? 1 : 0.4 }}>
+          <Text style={{ color: colors.muted, fontSize: r.fontSize.xs, fontWeight: "700", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 8 }}>
+            Do Not Disturb
+          </Text>
+          {/* Master quiet hours toggle */}
+          <View style={{ backgroundColor: colors.background, borderRadius: 14, borderWidth: 1, borderColor: colors.border, overflow: "hidden" }}>
+            <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: r.isXs ? 14 : 16, minHeight: 56, gap: 12 }}>
+              <Text style={{ fontSize: 18, flexShrink: 0 }}>🌙</Text>
+              <View style={{ flex: 1, minWidth: 0 }}>
+                <Text style={{ color: colors.foreground, fontSize: r.fontSize.base, fontWeight: "600" }}>Quiet Hours</Text>
+                <Text style={{ color: colors.muted, fontSize: r.fontSize.xs, marginTop: 1 }}>
+                  {settings.quietHoursEnabled
+                    ? `Silenced ${formatHour(settings.quietHoursStart)} – ${formatHour(settings.quietHoursEnd)}`
+                    : "Alerts sent at any time"}
+                </Text>
+              </View>
+              <Switch
+                value={settings.quietHoursEnabled}
+                onValueChange={(v) => handleSave({ ...settings, quietHoursEnabled: v })}
+                disabled={!settings.enabled}
+                trackColor={{ false: colors.border, true: "#7C3AED" }}
+                thumbColor={Platform.OS === "android" ? "#FFFFFF" : undefined}
+              />
+            </View>
+
+            {/* Time pickers — shown when quiet hours enabled */}
+            {settings.quietHoursEnabled && (
+              <>
+                <View style={{ borderTopWidth: 1, borderTopColor: colors.border }}>
+                  <Text style={{ color: colors.muted, fontSize: r.fontSize.xs, fontWeight: "600", paddingHorizontal: r.isXs ? 14 : 16, paddingTop: 12, paddingBottom: 6, textTransform: "uppercase", letterSpacing: 0.5 }}>Start Time</Text>
+                  <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6, paddingHorizontal: r.isXs ? 14 : 16, paddingBottom: 12 }}>
+                    {[20, 21, 22, 23, 0].map((h) => {
+                      const sel = settings.quietHoursStart === h;
+                      return (
+                        <TouchableOpacity
+                          key={h}
+                          style={{ paddingHorizontal: 10, height: 36, borderRadius: 8, borderWidth: 1.5, borderColor: sel ? "#7C3AED" : colors.border, backgroundColor: sel ? "#7C3AED10" : colors.background, justifyContent: "center" }}
+                          onPress={() => handleSave({ ...settings, quietHoursStart: h })}
+                          activeOpacity={0.7}
+                        >
+                          <Text style={{ color: sel ? "#7C3AED" : colors.muted, fontSize: r.fontSize.xs, fontWeight: sel ? "700" : "400" }}>{formatHour(h)}</Text>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
+                </View>
+                <View style={{ borderTopWidth: 1, borderTopColor: colors.border }}>
+                  <Text style={{ color: colors.muted, fontSize: r.fontSize.xs, fontWeight: "600", paddingHorizontal: r.isXs ? 14 : 16, paddingTop: 12, paddingBottom: 6, textTransform: "uppercase", letterSpacing: 0.5 }}>End Time</Text>
+                  <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6, paddingHorizontal: r.isXs ? 14 : 16, paddingBottom: 12 }}>
+                    {[5, 6, 7, 8, 9, 10].map((h) => {
+                      const sel = settings.quietHoursEnd === h;
+                      return (
+                        <TouchableOpacity
+                          key={h}
+                          style={{ paddingHorizontal: 10, height: 36, borderRadius: 8, borderWidth: 1.5, borderColor: sel ? "#7C3AED" : colors.border, backgroundColor: sel ? "#7C3AED10" : colors.background, justifyContent: "center" }}
+                          onPress={() => handleSave({ ...settings, quietHoursEnd: h })}
+                          activeOpacity={0.7}
+                        >
+                          <Text style={{ color: sel ? "#7C3AED" : colors.muted, fontSize: r.fontSize.xs, fontWeight: sel ? "700" : "400" }}>{formatHour(h)}</Text>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
+                </View>
+              </>
+            )}
+          </View>
+          {settings.quietHoursEnabled && (
+            <Text style={{ color: colors.muted, fontSize: r.fontSize.xs, marginTop: 6, lineHeight: 16 }}>
+              🌙 Alerts will be silenced from {formatHour(settings.quietHoursStart)} to {formatHour(settings.quietHoursEnd)}. Urgent alerts may still appear.
+            </Text>
+          )}
         </View>
 
         {/* Reset Defaults */}

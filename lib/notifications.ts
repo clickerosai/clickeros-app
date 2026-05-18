@@ -153,7 +153,8 @@ const DEFAULT_ALERT_CONFIG: CampaignAlertConfig = {
 
 /**
  * Check campaign metrics and fire push + in-app notifications if thresholds are breached.
- * Call this periodically (e.g., every 30 minutes) or after each data refresh.
+ * Respects quiet hours — push notifications are suppressed during DND window.
+ * Call this after each data refresh.
  */
 export async function checkCampaignAlerts(
   campaigns: Array<{
@@ -165,11 +166,22 @@ export async function checkCampaignAlerts(
     status: string;
     platform: string;
   }>,
-  config: CampaignAlertConfig = DEFAULT_ALERT_CONFIG
+  config: CampaignAlertConfig = DEFAULT_ALERT_CONFIG,
+  quietHours?: { enabled: boolean; start: number; end: number }
 ): Promise<void> {
   if (Platform.OS === "web") return;
 
   const hasPermission = await requestNotificationPermissions();
+
+  // Check quiet hours — suppress push notifications but still store in-app notifications
+  const isInQuietHours = (() => {
+    if (!quietHours?.enabled) return false;
+    const hour = new Date().getHours();
+    const { start, end } = quietHours;
+    return start > end
+      ? hour >= start || hour < end   // overnight window
+      : hour >= start && hour < end;  // same-day window
+  })();
 
   for (const campaign of campaigns) {
     if (campaign.status !== "Active" && campaign.status !== "Scaling") continue;
@@ -189,7 +201,8 @@ export async function checkCampaignAlerts(
         data: { roas: roasValue, threshold: config.roasDropThreshold },
       });
 
-      if (hasPermission) {
+      // Only send push if not in quiet hours
+      if (hasPermission && !isInQuietHours) {
         await Notifications.scheduleNotificationAsync({
           content: {
             title: notification.title,
@@ -215,7 +228,8 @@ export async function checkCampaignAlerts(
           data: { spendPercent, spend: spendValue, budget: budgetValue },
         });
 
-        if (hasPermission) {
+        // Only send push if not in quiet hours
+        if (hasPermission && !isInQuietHours) {
           await Notifications.scheduleNotificationAsync({
             content: {
               title: notification.title,
@@ -259,6 +273,99 @@ export async function addOptimizationNotification(
       categoryIdentifier: "optimization",
     },
     trigger: null,
+  }).catch(() => {});
+}
+
+// ── Daily Performance Digest ─────────────────────────────────────────────────
+
+const DIGEST_SCHEDULED_KEY = "@clickeros:digest_scheduled_date";
+
+/**
+ * Schedule the daily performance digest push notification at 9 AM.
+ * Only schedules once per day — checks AsyncStorage to avoid duplicates.
+ *
+ * @param campaigns - Current campaign data for the summary
+ */
+export async function scheduleDailyDigest(
+  campaigns: Array<{
+    id: string;
+    name: string;
+    roas: string;
+    spend: string;
+    status: string;
+  }>
+): Promise<void> {
+  if (Platform.OS === "web") return;
+
+  const hasPermission = await getNotificationPermissionStatus();
+  if (hasPermission !== "granted") return;
+
+  // Only schedule once per calendar day
+  const today = new Date().toDateString();
+  try {
+    const lastScheduled = await AsyncStorage.getItem(DIGEST_SCHEDULED_KEY);
+    if (lastScheduled === today) return; // Already scheduled today
+    await AsyncStorage.setItem(DIGEST_SCHEDULED_KEY, today);
+  } catch {}
+
+  // Build digest summary
+  const activeCampaigns = campaigns.filter(
+    (c) => c.status === "Active" || c.status === "Scaling"
+  );
+
+  const roasValues = activeCampaigns
+    .map((c) => parseFloat(c.roas?.replace(/[^0-9.]/g, "") ?? "0"))
+    .filter((v) => v > 0);
+
+  const avgRoas = roasValues.length > 0
+    ? (roasValues.reduce((a, b) => a + b, 0) / roasValues.length).toFixed(1)
+    : "N/A";
+
+  const totalSpend = campaigns
+    .map((c) => parseFloat(c.spend?.replace(/[^0-9.]/g, "") ?? "0"))
+    .reduce((a, b) => a + b, 0);
+
+  const topCampaign = activeCampaigns.sort((a, b) => {
+    const ra = parseFloat(a.roas?.replace(/[^0-9.]/g, "") ?? "0");
+    const rb = parseFloat(b.roas?.replace(/[^0-9.]/g, "") ?? "0");
+    return rb - ra;
+  })[0];
+
+  const title = `📊 Daily Performance Digest`;
+  const body = [
+    `${activeCampaigns.length} active campaign${activeCampaigns.length !== 1 ? "s" : ""}`,
+    `Avg ROAS: ${avgRoas}x`,
+    `Total spend: $${totalSpend.toFixed(0)}`,
+    topCampaign ? `Top: ${topCampaign.name} (${topCampaign.roas})` : null,
+  ].filter(Boolean).join(" · ");
+
+  // Schedule for 9 AM today (or tomorrow if it's already past 9 AM)
+  const now = new Date();
+  const digestTime = new Date();
+  digestTime.setHours(9, 0, 0, 0);
+  if (digestTime <= now) {
+    // Already past 9 AM today — schedule for tomorrow
+    digestTime.setDate(digestTime.getDate() + 1);
+  }
+
+  const secondsUntilDigest = Math.floor((digestTime.getTime() - now.getTime()) / 1000);
+
+  // Store as in-app notification too
+  await addNotification({
+    type: "system",
+    title,
+    body,
+  });
+
+  // Schedule the push
+  await Notifications.scheduleNotificationAsync({
+    content: {
+      title,
+      body,
+      data: { type: "daily_digest" },
+      categoryIdentifier: "system",
+    },
+    trigger: { type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL, seconds: secondsUntilDigest },
   }).catch(() => {});
 }
 

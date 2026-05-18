@@ -192,3 +192,8 @@
 - [x] Notification settings screen (thresholds, type toggles, AsyncStorage)
 - [x] Notification permission prompt on Dashboard after first campaign
 - [x] Wire checkCampaignAlerts to Dashboard pull-to-refresh
+
+## Advanced Notifications
+- [x] Quiet hours (Do Not Disturb) in Notification Settings
+- [x] Per-campaign alert overrides (custom ROAS threshold per campaign)
+- [x] Daily performance digest (scheduled 9 AM push summary)

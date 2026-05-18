@@ -12,6 +12,7 @@ import { useRouter } from "expo-router";
 import * as Haptics from "expo-haptics";
 import { trpc } from "@/lib/trpc";
 import { useToast } from "@/components/toast";
+import { CampaignAlertSheet } from "@/components/campaign-alert-sheet";
 import { ScreenContainer } from "@/components/screen-container";
 import { useColors } from "@/hooks/use-colors";
 import { useResponsive } from "@/hooks/use-responsive";
@@ -48,6 +49,7 @@ export default function CampaignsScreen() {
   const [localStatuses, setLocalStatuses] = useState<Record<string, Campaign["status"]>>({});
   // Track which campaigns are currently processing an action
   const [processingIds, setProcessingIds] = useState<Set<string>>(new Set());
+  const [alertSheetCampaign, setAlertSheetCampaign] = useState<Campaign | null>(null);
 
   // Mark stale after 5 minutes
   useEffect(() => {
@@ -364,11 +366,29 @@ export default function CampaignsScreen() {
                 >
                   <IconSymbol name="chart.bar.fill" size={16} color={colors.muted} />
                 </TouchableOpacity>
+
+                {/* Alert Override Bell */}
+                <TouchableOpacity
+                  style={{ backgroundColor: colors.surface, borderRadius: 8, width: 44, height: 44, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: colors.border }}
+                  onPress={() => setAlertSheetCampaign(item)}
+                  activeOpacity={0.7}
+                >
+                  <IconSymbol name="bell.fill" size={16} color="#7C3AED" />
+                </TouchableOpacity>
               </View>
             </TouchableOpacity>
           );
         }}
       />
+
+      {/* Per-Campaign Alert Override Sheet */}
+      {alertSheetCampaign && (
+        <CampaignAlertSheet
+          campaign={alertSheetCampaign}
+          visible={!!alertSheetCampaign}
+          onClose={() => setAlertSheetCampaign(null)}
+        />
+      )}
     </ScreenContainer>
   );
 }
