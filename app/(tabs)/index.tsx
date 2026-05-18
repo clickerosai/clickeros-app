@@ -7,7 +7,7 @@ import {
   Platform,
   ActivityIndicator,
 } from "react-native";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "expo-router";
 import * as Haptics from "expo-haptics";
 import { trpc } from "@/lib/trpc";
@@ -16,6 +16,7 @@ import { ScreenContainer } from "@/components/screen-container";
 import { useColors } from "@/hooks/use-colors";
 import { useResponsive } from "@/hooks/use-responsive";
 import { IconSymbol } from "@/components/ui/icon-symbol";
+import { getUnreadCount, checkCampaignAlerts } from "@/lib/notifications";
 
 const STAT_ICONS: Record<string, { icon: Parameters<typeof IconSymbol>[0]["name"]; color: string }> = {
   "Active Campaigns": { icon: "megaphone.fill", color: "#7C3AED" },
@@ -51,6 +52,12 @@ export default function DashboardScreen() {
   const router = useRouter();
   const colors = useColors();
   const r = useResponsive();
+  const [unreadNotifCount, setUnreadNotifCount] = useState(0);
+
+  // Load unread notification count
+  useEffect(() => {
+    getUnreadCount().then(setUnreadNotifCount);
+  }, []);
 
   // ── Real API queries via tRPC ──────────────────────────────────────────────
   const statsQuery     = trpc.dashboard.stats.useQuery(undefined, { staleTime: 60_000 });
@@ -119,10 +126,26 @@ export default function DashboardScreen() {
             </View>
             <TouchableOpacity
               style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: "rgba(255,255,255,0.2)", alignItems: "center", justifyContent: "center" }}
-              onPress={() => router.push("/settings" as any)}
+              onPress={() => {
+                setUnreadNotifCount(0);
+                router.push("/notifications" as any);
+              }}
               activeOpacity={0.7}
             >
               <IconSymbol name="bell.fill" size={20} color="#FFFFFF" />
+              {unreadNotifCount > 0 && (
+                <View style={{
+                  position: "absolute", top: 6, right: 6,
+                  width: 16, height: 16, borderRadius: 8,
+                  backgroundColor: "#EF4444",
+                  alignItems: "center", justifyContent: "center",
+                  borderWidth: 1.5, borderColor: "#7C3AED",
+                }}>
+                  <Text style={{ color: "#FFFFFF", fontSize: 9, fontWeight: "800" }}>
+                    {unreadNotifCount > 9 ? "9+" : String(unreadNotifCount)}
+                  </Text>
+                </View>
+              )}
             </TouchableOpacity>
           </View>
           {/* Live status row */}

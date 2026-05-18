@@ -21,6 +21,14 @@ import { trpc, createTRPCClient } from "@/lib/trpc";
 import { initManusRuntime, subscribeSafeAreaInsets } from "@/lib/_core/manus-runtime";
 import * as Auth from "@/lib/_core/auth";
 import { ToastProvider, useToast } from "@/components/toast";
+import {
+  setupNotificationHandler,
+  setupAndroidChannels,
+} from "@/lib/notifications";
+import { WhatsNewModal } from "@/components/whats-new-modal";
+
+// Initialize notification handler at module level (required by expo-notifications)
+setupNotificationHandler();
 
 const DEFAULT_WEB_INSETS: EdgeInsets = { top: 0, right: 0, bottom: 0, left: 0 };
 const DEFAULT_WEB_FRAME: Rect = { x: 0, y: 0, width: 0, height: 0 };
@@ -92,9 +100,11 @@ export default function RootLayout() {
   // Ref to hold the showToast function (set by SessionGuard after mount)
   const showToastRef = useRef<((opts: any) => void) | null>(null);
 
-  // Initialize Manus runtime
+  // Initialize Manus runtime and notification channels
   useEffect(() => {
     initManusRuntime();
+    // Set up Android notification channels
+    setupAndroidChannels().catch(() => {});
   }, []);
 
   const handleSafeAreaUpdate = useCallback((metrics: Metrics) => {
@@ -221,6 +231,7 @@ export default function RootLayout() {
           <ToastProvider>
             <ToastBridge />
             <SessionGuard sessionExpiredRef={sessionExpiredRef} />
+            <WhatsNewModal />
             <Stack screenOptions={{ headerShown: false }}>
               <Stack.Screen name="(tabs)" />
               {/* fullScreenModal prevents back-swipe to the stale ?code= URL */}

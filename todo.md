@@ -182,3 +182,8 @@
 - [x] Sign Out Everywhere in Settings (clearBiometricToken + removeSessionToken + clearUserInfo + toast)
 - [x] Campaign toast notifications (pause, resume, optimize)
 - [x] Biometric enrollment prompt after sign-in
+
+## Notification Features
+- [x] Push notification service (expo-notifications, ROAS drop, budget exhausted)
+- [x] In-app notification center (bell icon, read/unread, campaign events)
+- [x] What's New changelog modal (one-time per version, AsyncStorage)
