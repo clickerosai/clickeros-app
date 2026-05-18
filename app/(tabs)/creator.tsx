@@ -18,6 +18,7 @@ import { useColors } from "@/hooks/use-colors";
 import { useResponsive } from "@/hooks/use-responsive";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import type { AdVariation, CampaignInput } from "@/server/adGeneratorRouter";
+import { ErrorBoundary } from "@/components/error-boundary";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -109,7 +110,7 @@ function ScoreBar({ score, breakdown }: { score: number; breakdown: AdVariation[
 
 // ── Main Screen ───────────────────────────────────────────────────────────────
 
-export default function CreatorScreen() {
+function CreatorScreenInner() {
   const colors = useColors();
   const r = useResponsive();
 
@@ -669,5 +670,13 @@ export default function CreatorScreen() {
         </ScrollView>
       </KeyboardAvoidingView>
     </ScreenContainer>
+  );
+}
+
+export default function CreatorScreen() {
+  return (
+    <ErrorBoundary>
+      <CreatorScreenInner />
+    </ErrorBoundary>
   );
 }

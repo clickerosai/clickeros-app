@@ -1,4 +1,12 @@
-import { publicProcedure, router } from "./_core/trpc";
+import { router, publicProcedure } from "./_core/trpc";
+import { clickerosApi, isApiConfigured } from "../lib/clickeros-api";
+
+// Log API connection status on startup
+if (isApiConfigured()) {
+  console.log("[Dashboard] Connected to Clickeros AI API — using live data");
+} else {
+  console.log("[Dashboard] CLICKEROS_API_KEY not set — using mock data (set it in Secrets to enable live data)");
+}
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -71,8 +79,24 @@ export const dashboardRouter = router({
   /**
    * GET /api/trpc/dashboard.stats
    * Returns the four KPI cards on the Dashboard screen.
+   * Uses live Clickeros API data when CLICKEROS_API_KEY is configured;
+   * falls back to mock data otherwise.
    */
-  stats: publicProcedure.query((): DashboardStat[] => {
+  stats: publicProcedure.query(async (): Promise<DashboardStat[]> => {
+    // Try real API first
+    if (isApiConfigured()) {
+      const liveStats = await clickerosApi.getDashboardStats("today");
+      if (liveStats) {
+        return [
+          { label: "Active Campaigns", value: String(liveStats.activeCampaigns), change: "", positive: true },
+          { label: "Total Revenue",    value: fmtCurrency(liveStats.totalRevenue), change: "", positive: true },
+          { label: "Avg. ROAS",        value: `${liveStats.avgRoas.toFixed(1)}x`, change: "", positive: liveStats.avgRoas >= 2 },
+          { label: "CTR",              value: `${liveStats.ctr.toFixed(1)}%`, change: "", positive: liveStats.ctr >= 2 },
+        ];
+      }
+    }
+
+    // Fallback: mock data with slight variation
     const revenue = vary(48200);
     const roas = vary(3.8, 0.04);
     const ctr = vary(4.7, 0.06);
@@ -110,7 +134,32 @@ export const dashboardRouter = router({
    * GET /api/trpc/dashboard.campaigns
    * Returns the recent campaigns list.
    */
-  campaigns: publicProcedure.query((): Campaign[] => {
+  campaigns: publicProcedure.query(async (): Promise<Campaign[]> => {
+    // Try real API first
+    if (isApiConfigured()) {
+      const liveCampaigns = await clickerosApi.getCampaigns();
+      if (liveCampaigns && liveCampaigns.length > 0) {
+        const PLATFORM_COLORS: Record<string, string> = {
+          facebook: "#1877F2", instagram: "#E1306C", google: "#4285F4",
+          tiktok: "#010101", youtube: "#FF0000", linkedin: "#0077B5",
+          pinterest: "#E60023",
+        };
+        return liveCampaigns.map((c) => ({
+          id: c.id,
+          name: c.name,
+          platform: c.platform.charAt(0).toUpperCase() + c.platform.slice(1),
+          status: (c.status.charAt(0).toUpperCase() + c.status.slice(1)) as Campaign["status"],
+          budget: `$${c.dailyBudget}/day`,
+          spend: fmtCurrency(c.totalSpend),
+          roas: `${c.roas.toFixed(1)}x`,
+          ctr: `${c.ctr.toFixed(1)}%`,
+          impressions: fmtK(c.impressions),
+          color: PLATFORM_COLORS[c.platform.toLowerCase()] ?? "#7C3AED",
+        }));
+      }
+    }
+
+    // Fallback: mock data
     return [
       {
         id: "1",

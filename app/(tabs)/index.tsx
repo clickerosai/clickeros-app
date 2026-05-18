@@ -27,6 +27,7 @@ import {
 } from "@/lib/notifications";
 import { getNotificationSettings } from "@/app/notification-settings";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { ErrorBoundary } from "@/components/error-boundary";
 
 const NOTIF_PROMPT_KEY = "@clickeros:notif_prompt_shown";
 
@@ -60,7 +61,7 @@ function formatTime(d: Date) {
   return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
-export default function DashboardScreen() {
+function DashboardScreenInner() {
   const router = useRouter();
   const colors = useColors();
   const r = useResponsive();
@@ -416,5 +417,13 @@ export default function DashboardScreen() {
         </View>
       </ScrollView>
     </ScreenContainer>
+  );
+}
+
+export default function DashboardScreen() {
+  return (
+    <ErrorBoundary>
+      <DashboardScreenInner />
+    </ErrorBoundary>
   );
 }

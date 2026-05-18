@@ -4,6 +4,7 @@ import { ScreenContainer } from "@/components/screen-container";
 import { useColors } from "@/hooks/use-colors";
 import { useResponsive } from "@/hooks/use-responsive";
 import { IconSymbol } from "@/components/ui/icon-symbol";
+import { ErrorBoundary } from "@/components/error-boundary";
 
 const NAV_SECTIONS = [
   {
@@ -95,7 +96,7 @@ const NAV_SECTIONS = [
   },
 ];
 
-export default function MoreScreen() {
+function MoreScreenInner() {
   const router = useRouter();
   const colors = useColors();
   const r = useResponsive();
@@ -168,5 +169,13 @@ export default function MoreScreen() {
         ))}
       </ScrollView>
     </ScreenContainer>
+  );
+}
+
+export default function MoreScreen() {
+  return (
+    <ErrorBoundary>
+      <MoreScreenInner />
+    </ErrorBoundary>
   );
 }

@@ -15,6 +15,7 @@ import { ScreenContainer } from "@/components/screen-container";
 import { useColors } from "@/hooks/use-colors";
 import { useResponsive } from "@/hooks/use-responsive";
 import { IconSymbol } from "@/components/ui/icon-symbol";
+import { ErrorBoundary } from "@/components/error-boundary";
 
 const TIME_RANGES = ["7D", "30D", "90D", "All"];
 
@@ -31,7 +32,7 @@ function formatTime(d: Date) {
   return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
-export default function AnalyticsScreen() {
+function AnalyticsScreenInner() {
   const router = useRouter();
   const colors = useColors();
   const r = useResponsive();
@@ -261,5 +262,13 @@ export default function AnalyticsScreen() {
         </View>
       </ScrollView>
     </ScreenContainer>
+  );
+}
+
+export default function AnalyticsScreen() {
+  return (
+    <ErrorBoundary>
+      <AnalyticsScreenInner />
+    </ErrorBoundary>
   );
 }

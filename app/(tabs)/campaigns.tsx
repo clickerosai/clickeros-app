@@ -6,6 +6,7 @@ import {
   RefreshControl,
   Platform,
   ActivityIndicator,
+  TextInput,
 } from "react-native";
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "expo-router";
@@ -19,6 +20,7 @@ import { useResponsive } from "@/hooks/use-responsive";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { StaleDataStore } from "@/hooks/use-stale-data";
 import type { Campaign } from "@/server/dashboardRouter";
+import { ErrorBoundary } from "@/components/error-boundary";
 
 const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
   Active:  { bg: "#DCFCE7", text: "#16A34A" },
@@ -31,7 +33,7 @@ function formatTime(d: Date) {
   return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
-export default function CampaignsScreen() {
+function CampaignsScreenInner() {
   const router = useRouter();
   const colors = useColors();
   const r = useResponsive();
@@ -50,6 +52,20 @@ export default function CampaignsScreen() {
   // Track which campaigns are currently processing an action
   const [processingIds, setProcessingIds] = useState<Set<string>>(new Set());
   const [alertSheetCampaign, setAlertSheetCampaign] = useState<Campaign | null>(null);
+
+  // ── Search & Filter ─────────────────────────────────────────────────────────────────────────
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"All" | "Active" | "Paused" | "Scaling" | "Stopped">("All");
+
+  // Filtered campaigns based on search + status filter
+  const filteredCampaigns = campaigns.filter((c) => {
+    const effectiveStatus = localStatuses[c.id] ?? c.status;
+    const matchesStatus = statusFilter === "All" || effectiveStatus === statusFilter;
+    const matchesSearch = searchQuery.trim() === "" ||
+      c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c.platform.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesStatus && matchesSearch;
+  });
 
   // Mark stale after 5 minutes
   useEffect(() => {
@@ -237,26 +253,56 @@ export default function CampaignsScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Summary Row */}
-        <View style={{ flexDirection: "row", gap: 16, marginTop: 10, flexWrap: "wrap" }}>
-          {[
-            { label: "Active",  value: String(activeCount),  color: "#22C55E" },
-            { label: "Paused",  value: String(pausedCount),  color: "#F59E0B" },
-            { label: "Scaling", value: String(scalingCount), color: "#7C3AED" },
-          ].map((item) => (
-            <View key={item.label} style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-              <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: item.color }} />
-              <Text style={{ color: colors.muted, fontSize: r.fontSize.sm }}>
-                <Text style={{ color: colors.foreground, fontWeight: "600" }}>{item.value}</Text> {item.label}
+        {/* Search Bar */}
+        <View style={{ flexDirection: "row", alignItems: "center", backgroundColor: colors.surface, borderRadius: 12, paddingHorizontal: 12, height: 44, gap: 8, marginTop: 10, borderWidth: 1, borderColor: colors.border }}>
+          <IconSymbol name="magnifyingglass" size={16} color={colors.muted} />
+          <TextInput
+            style={{ flex: 1, color: colors.foreground, fontSize: r.fontSize.base, height: 44 }}
+            placeholder="Search campaigns or platforms…"
+            placeholderTextColor={colors.muted}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            returnKeyType="search"
+            autoCorrect={false}
+            autoCapitalize="none"
+          />
+          {searchQuery.length > 0 && (
+            <TouchableOpacity onPress={() => setSearchQuery("")} activeOpacity={0.7} style={{ minWidth: 28, minHeight: 28, alignItems: "center", justifyContent: "center" }}>
+              <IconSymbol name="xmark" size={14} color={colors.muted} />
+            </TouchableOpacity>
+          )}
+        </View>
+
+        {/* Status Filter Chips */}
+        <View style={{ flexDirection: "row", gap: 6, marginTop: 10, flexWrap: "wrap" }}>
+          {(["All", "Active", "Paused", "Scaling", "Stopped"] as const).map((status) => {
+            const sel = statusFilter === status;
+            const chipColors: Record<string, string> = { All: "#7C3AED", Active: "#22C55E", Paused: "#F59E0B", Scaling: "#7C3AED", Stopped: "#EF4444" };
+            const chipColor = chipColors[status] ?? "#7C3AED";
+            return (
+              <TouchableOpacity
+                key={status}
+                style={{ paddingHorizontal: 12, height: 32, borderRadius: 8, borderWidth: 1.5, borderColor: sel ? chipColor : colors.border, backgroundColor: sel ? `${chipColor}15` : colors.background, justifyContent: "center" }}
+                onPress={() => setStatusFilter(status)}
+                activeOpacity={0.7}
+              >
+                <Text style={{ color: sel ? chipColor : colors.muted, fontSize: r.fontSize.xs, fontWeight: sel ? "700" : "400" }}>{status}</Text>
+              </TouchableOpacity>
+            );
+          })}
+          {(searchQuery || statusFilter !== "All") && (
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 4, paddingHorizontal: 8, height: 32 }}>
+              <Text style={{ color: colors.muted, fontSize: r.fontSize.xs }}>
+                {filteredCampaigns.length} of {campaigns.length}
               </Text>
             </View>
-          ))}
+          )}
         </View>
       </View>
 
       {/* Campaign FlatList with Pull-to-Refresh */}
       <FlatList
-        data={displayData}
+        data={isLoading ? skeletonData : filteredCampaigns}
         keyExtractor={(item) => item.id}
         contentContainerStyle={{ padding: r.px, gap: 12 }}
         showsVerticalScrollIndicator={false}
@@ -390,5 +436,13 @@ export default function CampaignsScreen() {
         />
       )}
     </ScreenContainer>
+  );
+}
+
+export default function CampaignsScreen() {
+  return (
+    <ErrorBoundary>
+      <CampaignsScreenInner />
+    </ErrorBoundary>
   );
 }
