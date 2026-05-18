@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "expo-router";
+import { useToast } from "@/components/toast";
 import * as Haptics from "expo-haptics";
 import { trpc } from "@/lib/trpc";
 import { StaleDataStore } from "@/hooks/use-stale-data";
@@ -16,7 +17,16 @@ import { ScreenContainer } from "@/components/screen-container";
 import { useColors } from "@/hooks/use-colors";
 import { useResponsive } from "@/hooks/use-responsive";
 import { IconSymbol } from "@/components/ui/icon-symbol";
-import { getUnreadCount, checkCampaignAlerts } from "@/lib/notifications";
+import {
+  getUnreadCount,
+  checkCampaignAlerts,
+  getNotificationPermissionStatus,
+  requestNotificationPermissions,
+} from "@/lib/notifications";
+import { getNotificationSettings } from "@/app/notification-settings";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+const NOTIF_PROMPT_KEY = "@clickeros:notif_prompt_shown";
 
 const STAT_ICONS: Record<string, { icon: Parameters<typeof IconSymbol>[0]["name"]; color: string }> = {
   "Active Campaigns": { icon: "megaphone.fill", color: "#7C3AED" },
@@ -53,15 +63,58 @@ export default function DashboardScreen() {
   const colors = useColors();
   const r = useResponsive();
   const [unreadNotifCount, setUnreadNotifCount] = useState(0);
+  const { showToast } = useToast();
 
   // Load unread notification count
   useEffect(() => {
     getUnreadCount().then(setUnreadNotifCount);
   }, []);
 
-  // ── Real API queries via tRPC ──────────────────────────────────────────────
+  // ── Real API queries via tRPC ────────────────────────────────────────────────────────
   const statsQuery     = trpc.dashboard.stats.useQuery(undefined, { staleTime: 60_000 });
   const campaignsQuery = trpc.dashboard.campaigns.useQuery(undefined, { staleTime: 60_000 });
+
+  // Show notification permission prompt after first campaign loads
+  useEffect(() => {
+    const checkPermissionPrompt = async () => {
+      if (Platform.OS === "web") return;
+      try {
+        const alreadyShown = await AsyncStorage.getItem(NOTIF_PROMPT_KEY);
+        if (alreadyShown) return;
+        const status = await getNotificationPermissionStatus();
+        if (status === "granted") return;
+        // Wait until we have campaign data to show the prompt
+        if (!campaignsQuery.data || campaignsQuery.data.length === 0) return;
+        await AsyncStorage.setItem(NOTIF_PROMPT_KEY, "1");
+        // Show after a short delay so the dashboard renders first
+        setTimeout(() => {
+          showToast({
+            type: "info",
+            message: "Enable campaign alerts 🔔",
+            subMessage: "Get notified when ROAS drops or budget is exhausted.",
+            duration: 8000,
+            action: {
+              label: "Enable",
+              onPress: async () => {
+                const granted = await requestNotificationPermissions();
+                if (granted) {
+                  showToast({
+                    type: "success",
+                    message: "Campaign alerts enabled ✅",
+                    subMessage: "You'll be notified of ROAS drops and budget alerts.",
+                    duration: 3500,
+                  });
+                }
+              },
+            },
+          });
+        }, 2000);
+      } catch {
+        // Non-critical
+      }
+    };
+    checkPermissionPrompt();
+  }, [campaignsQuery.data]);
 
   const isLoading    = statsQuery.isLoading || campaignsQuery.isLoading;
   const isRefreshing = statsQuery.isFetching || campaignsQuery.isFetching;
@@ -81,17 +134,41 @@ export default function DashboardScreen() {
   const stats    = statsQuery.data    ?? [];
   const campaigns = campaignsQuery.data ?? [];
 
-  // ── Pull-to-refresh ────────────────────────────────────────────────────────
+  // ── Pull-to-refresh with campaign alert check ─────────────────────────────
   const onRefresh = useCallback(async () => {
     if (Platform.OS !== "web") {
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     }
-    await Promise.all([
-      statsQuery.refetch(),
+    const [freshCampaigns] = await Promise.all([
       campaignsQuery.refetch(),
+      statsQuery.refetch(),
     ]);
     if (Platform.OS !== "web") {
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    }
+    // Check campaign alerts with user's configured thresholds
+    if (freshCampaigns.data && freshCampaigns.data.length > 0) {
+      const notifSettings = await getNotificationSettings();
+      if (notifSettings.enabled) {
+        checkCampaignAlerts(
+          freshCampaigns.data.map((c) => ({
+            id: c.id,
+            name: c.name,
+            roas: c.roas,
+            spend: c.spend,
+            budget: c.budget,
+            status: c.status,
+            platform: c.platform,
+          })),
+          {
+            roasDropThreshold: notifSettings.roasDropThreshold,
+            budgetExhaustedPercent: notifSettings.budgetExhaustedPercent,
+          }
+        ).then(() => {
+          // Refresh unread count after alerts may have been added
+          getUnreadCount().then(setUnreadNotifCount);
+        }).catch(() => {});
+      }
     }
   }, [statsQuery, campaignsQuery]);
 

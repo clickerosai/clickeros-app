@@ -187,3 +187,8 @@
 - [x] Push notification service (expo-notifications, ROAS drop, budget exhausted)
 - [x] In-app notification center (bell icon, read/unread, campaign events)
 - [x] What's New changelog modal (one-time per version, AsyncStorage)
+
+## Notification Improvements
+- [x] Notification settings screen (thresholds, type toggles, AsyncStorage)
+- [x] Notification permission prompt on Dashboard after first campaign
+- [x] Wire checkCampaignAlerts to Dashboard pull-to-refresh

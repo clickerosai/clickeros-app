@@ -55,6 +55,13 @@ const SETTINGS_SECTIONS = [
     ],
   },
   {
+    title: "Notifications",
+    items: [
+      { label: "Notification Settings", desc: "ROAS alerts, budget thresholds, and frequency", icon: "🔔", route: "/notification-settings", action: null },
+      { label: "Notification Center", desc: "View all campaign alerts and messages", icon: "📬", route: "/notifications", action: null },
+    ],
+  },
+  {
     title: "Support",
     items: [
       { label: "Help Center", desc: "FAQs, guides, and tutorials", icon: "❓", route: "/support-dashboard", action: null },
