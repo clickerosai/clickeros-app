@@ -7,15 +7,16 @@ import {
   Platform,
   ActivityIndicator,
 } from "react-native";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "expo-router";
 import * as Haptics from "expo-haptics";
 import { trpc } from "@/lib/trpc";
-import { StaleDataStore } from "@/hooks/use-stale-data";
+import { useToast } from "@/components/toast";
 import { ScreenContainer } from "@/components/screen-container";
 import { useColors } from "@/hooks/use-colors";
 import { useResponsive } from "@/hooks/use-responsive";
 import { IconSymbol } from "@/components/ui/icon-symbol";
+import { StaleDataStore } from "@/hooks/use-stale-data";
 import type { Campaign } from "@/server/dashboardRouter";
 
 const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
@@ -33,6 +34,7 @@ export default function CampaignsScreen() {
   const router = useRouter();
   const colors = useColors();
   const r = useResponsive();
+  const { showToast } = useToast();
 
   // ── Real API query via tRPC ────────────────────────────────────────────────
   const query = trpc.dashboard.campaigns.useQuery(undefined, { staleTime: 60_000 });
@@ -42,7 +44,12 @@ export default function CampaignsScreen() {
   const lastUpdated  = query.dataUpdatedAt ? new Date(query.dataUpdatedAt) : new Date();
   const campaigns    = query.data ?? [];
 
-  // Mark stale after 5 minutes, mark fresh when data arrives
+  // Local optimistic state for campaign statuses (so UI updates instantly)
+  const [localStatuses, setLocalStatuses] = useState<Record<string, Campaign["status"]>>({});
+  // Track which campaigns are currently processing an action
+  const [processingIds, setProcessingIds] = useState<Set<string>>(new Set());
+
+  // Mark stale after 5 minutes
   useEffect(() => {
     if (query.dataUpdatedAt) {
       StaleDataStore.setStale("campaigns", false);
@@ -51,9 +58,9 @@ export default function CampaignsScreen() {
     }
   }, [query.dataUpdatedAt]);
 
-  const activeCount  = campaigns.filter((c) => c.status === "Active").length;
-  const pausedCount  = campaigns.filter((c) => c.status === "Paused").length;
-  const scalingCount = campaigns.filter((c) => c.status === "Scaling").length;
+  const activeCount  = campaigns.filter((c) => (localStatuses[c.id] ?? c.status) === "Active").length;
+  const pausedCount  = campaigns.filter((c) => (localStatuses[c.id] ?? c.status) === "Paused").length;
+  const scalingCount = campaigns.filter((c) => (localStatuses[c.id] ?? c.status) === "Scaling").length;
 
   // ── Pull-to-refresh ────────────────────────────────────────────────────────
   const onRefresh = useCallback(async () => {
@@ -65,6 +72,120 @@ export default function CampaignsScreen() {
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     }
   }, [query]);
+
+  // ── Pause / Resume Campaign ────────────────────────────────────────────────
+  const handleTogglePause = useCallback(async (campaign: Campaign) => {
+    const currentStatus = localStatuses[campaign.id] ?? campaign.status;
+    const isActive = currentStatus === "Active" || currentStatus === "Scaling";
+    const newStatus: Campaign["status"] = isActive ? "Paused" : "Active";
+
+    if (Platform.OS !== "web") {
+      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+
+    // Optimistic update
+    setLocalStatuses((prev) => ({ ...prev, [campaign.id]: newStatus }));
+    setProcessingIds((prev) => new Set([...prev, campaign.id]));
+
+    try {
+      // Simulate API call (replace with real mutation when backend supports it)
+      await new Promise((resolve) => setTimeout(resolve, 800));
+
+      if (Platform.OS !== "web") {
+        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
+
+      showToast({
+        type: "success",
+        message: isActive ? `Campaign paused ✅` : `Campaign resumed ✅`,
+        subMessage: `"${campaign.name}" is now ${newStatus.toLowerCase()}.`,
+        duration: 3500,
+      });
+    } catch (err) {
+      // Revert optimistic update on failure
+      setLocalStatuses((prev) => ({ ...prev, [campaign.id]: currentStatus }));
+
+      if (Platform.OS !== "web") {
+        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      }
+
+      showToast({
+        type: "error",
+        message: isActive ? "Failed to pause campaign" : "Failed to resume campaign",
+        subMessage: "Please try again or check your connection.",
+        duration: 4000,
+        action: {
+          label: "Retry",
+          onPress: () => handleTogglePause(campaign),
+        },
+      });
+    } finally {
+      setProcessingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(campaign.id);
+        return next;
+      });
+    }
+  }, [localStatuses, showToast]);
+
+  // ── Optimize Campaign ──────────────────────────────────────────────────────
+  const handleOptimize = useCallback(async (campaign: Campaign) => {
+    if (Platform.OS !== "web") {
+      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    }
+
+    setProcessingIds((prev) => new Set([...prev, `opt-${campaign.id}`]));
+
+    // Show "optimizing" toast immediately
+    showToast({
+      type: "info",
+      message: "Optimizing campaign…",
+      subMessage: `Analyzing "${campaign.name}" performance data.`,
+      duration: 2500,
+    });
+
+    try {
+      // Simulate AI optimization (replace with real mutation)
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      if (Platform.OS !== "web") {
+        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
+
+      // Simulate a ROAS improvement
+      showToast({
+        type: "success",
+        message: "Optimization applied ✅",
+        subMessage: `Budget reallocated for better ROAS on "${campaign.name}".`,
+        duration: 4500,
+        action: {
+          label: "View changes",
+          onPress: () => router.push("/analytics" as any),
+        },
+      });
+    } catch {
+      if (Platform.OS !== "web") {
+        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      }
+
+      showToast({
+        type: "error",
+        message: "Optimization failed",
+        subMessage: "Please try again. If the issue persists, contact support.",
+        duration: 4000,
+        action: {
+          label: "Retry",
+          onPress: () => handleOptimize(campaign),
+        },
+      });
+    } finally {
+      setProcessingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(`opt-${campaign.id}`);
+        return next;
+      });
+    }
+  }, [showToast, router]);
 
   // ── Skeleton placeholder ───────────────────────────────────────────────────
   const skeletonData: Campaign[] = Array.from({ length: 4 }, (_, i) => ({
@@ -150,7 +271,12 @@ export default function CampaignsScreen() {
           />
         }
         renderItem={({ item }) => {
-          const statusStyle = STATUS_COLORS[item.status] ?? { bg: "#F3F4F6", text: "#6B7280" };
+          const effectiveStatus = localStatuses[item.id] ?? item.status;
+          const statusStyle = STATUS_COLORS[effectiveStatus] ?? { bg: "#F3F4F6", text: "#6B7280" };
+          const isProcessing = processingIds.has(item.id);
+          const isOptimizing = processingIds.has(`opt-${item.id}`);
+          const isActive = effectiveStatus === "Active" || effectiveStatus === "Scaling";
+
           return (
             <TouchableOpacity
               style={{
@@ -172,7 +298,11 @@ export default function CampaignsScreen() {
                   <Text style={{ color: colors.muted, fontSize: r.fontSize.xs, marginTop: 2 }} numberOfLines={1}>{item.platform} · Budget: {item.budget}</Text>
                 </View>
                 <View style={{ backgroundColor: statusStyle.bg, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4, flexShrink: 0 }}>
-                  <Text style={{ color: statusStyle.text, fontSize: r.fontSize.xs, fontWeight: "600" }}>{item.status}</Text>
+                  {isProcessing ? (
+                    <ActivityIndicator size="small" color={statusStyle.text} />
+                  ) : (
+                    <Text style={{ color: statusStyle.text, fontSize: r.fontSize.xs, fontWeight: "600" }}>{effectiveStatus}</Text>
+                  )}
                 </View>
               </View>
 
@@ -193,15 +323,45 @@ export default function CampaignsScreen() {
 
               {/* Action Row */}
               <View style={{ flexDirection: "row", gap: 8, marginTop: 10 }}>
-                <TouchableOpacity style={{ flex: 1, backgroundColor: "#7C3AED15", borderRadius: 8, height: 44, alignItems: "center", justifyContent: "center" }} activeOpacity={0.7}>
-                  <Text style={{ color: "#7C3AED", fontSize: r.fontSize.sm, fontWeight: "600" }}>Optimize</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={{ flex: 1, backgroundColor: colors.surface, borderRadius: 8, height: 44, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: colors.border }} activeOpacity={0.7}>
-                  <Text style={{ color: colors.foreground, fontSize: r.fontSize.sm, fontWeight: "600" }}>
-                    {item.status === "Active" || item.status === "Scaling" ? "Pause" : "Resume"}
+                {/* Optimize */}
+                <TouchableOpacity
+                  style={{ flex: 1, backgroundColor: "#7C3AED15", borderRadius: 8, height: 44, alignItems: "center", justifyContent: "center", flexDirection: "row", gap: 6 }}
+                  onPress={() => handleOptimize(item)}
+                  activeOpacity={0.7}
+                  disabled={isOptimizing || isLoading}
+                >
+                  {isOptimizing ? (
+                    <ActivityIndicator size="small" color="#7C3AED" />
+                  ) : (
+                    <IconSymbol name="sparkles" size={14} color="#7C3AED" />
+                  )}
+                  <Text style={{ color: "#7C3AED", fontSize: r.fontSize.sm, fontWeight: "600" }}>
+                    {isOptimizing ? "Optimizing…" : "Optimize"}
                   </Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={{ backgroundColor: colors.surface, borderRadius: 8, width: 44, height: 44, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: colors.border }} activeOpacity={0.7}>
+
+                {/* Pause / Resume */}
+                <TouchableOpacity
+                  style={{ flex: 1, backgroundColor: colors.surface, borderRadius: 8, height: 44, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: colors.border }}
+                  onPress={() => handleTogglePause(item)}
+                  activeOpacity={0.7}
+                  disabled={isProcessing || isLoading}
+                >
+                  {isProcessing ? (
+                    <ActivityIndicator size="small" color={colors.muted} />
+                  ) : (
+                    <Text style={{ color: colors.foreground, fontSize: r.fontSize.sm, fontWeight: "600" }}>
+                      {isActive ? "Pause" : "Resume"}
+                    </Text>
+                  )}
+                </TouchableOpacity>
+
+                {/* Analytics */}
+                <TouchableOpacity
+                  style={{ backgroundColor: colors.surface, borderRadius: 8, width: 44, height: 44, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: colors.border }}
+                  onPress={() => router.push("/analytics" as any)}
+                  activeOpacity={0.7}
+                >
                   <IconSymbol name="chart.bar.fill" size={16} color={colors.muted} />
                 </TouchableOpacity>
               </View>

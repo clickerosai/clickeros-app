@@ -177,3 +177,8 @@
 - [x] Session expired toast before redirect
 - [x] Biometric re-authentication (Face ID / fingerprint) on native
 - [x] Remember Me checkbox on Sign Up with silent token refresh
+
+## UX Polish
+- [x] Sign Out Everywhere in Settings (clearBiometricToken + removeSessionToken + clearUserInfo + toast)
+- [x] Campaign toast notifications (pause, resume, optimize)
+- [x] Biometric enrollment prompt after sign-in

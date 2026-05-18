@@ -6,10 +6,18 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Platform, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { storeBiometricToken, getRememberMe } from "@/lib/biometric-auth";
+import {
+  storeBiometricToken,
+  getRememberMe,
+  getBiometricInfo,
+  setRememberMe,
+} from "@/lib/biometric-auth";
 import { useToast } from "@/components/toast";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 type Status = "processing" | "success" | "error";
+
+const BIOMETRIC_PROMPT_SHOWN_KEY = "@clickeros:biometric_prompt_shown";
 
 export default function OAuthCallback() {
   const router = useRouter();
@@ -25,6 +33,68 @@ export default function OAuthCallback() {
   const [status, setStatus] = useState<Status>("processing");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const hasRun = useRef(false);
+
+  // ── Check if we should show biometric enrollment prompt ──────────────────
+  const showBiometricEnrollmentPrompt = async () => {
+    if (Platform.OS === "web") return;
+
+    try {
+      // Only show once per install
+      const alreadyShown = await AsyncStorage.getItem(BIOMETRIC_PROMPT_SHOWN_KEY);
+      if (alreadyShown) return;
+
+      const bioInfo = await getBiometricInfo();
+
+      // Device has biometric hardware but user hasn't enrolled
+      if (bioInfo.available && !bioInfo.enrolled) {
+        await AsyncStorage.setItem(BIOMETRIC_PROMPT_SHOWN_KEY, "1");
+        showToast({
+          type: "info",
+          message: `Enable ${bioInfo.label} for faster sign-in`,
+          subMessage: "Go to Settings → Biometrics to set it up.",
+          duration: 6000,
+          action: {
+            label: "Open Settings",
+            onPress: () => {
+              Linking.openURL("app-settings:").catch(() => {
+                // Fallback for Android
+                Linking.openURL("android.settings.SECURITY_SETTINGS").catch(() => {});
+              });
+            },
+          },
+        });
+        return;
+      }
+
+      // Device has biometrics enrolled but Remember Me is off — offer to enable
+      if (bioInfo.available && bioInfo.enrolled) {
+        const rememberMe = await getRememberMe();
+        if (!rememberMe) {
+          await AsyncStorage.setItem(BIOMETRIC_PROMPT_SHOWN_KEY, "1");
+          showToast({
+            type: "info",
+            message: `Use ${bioInfo.label} for quick sign-in`,
+            subMessage: "Enable Remember Me to sign in with one tap next time.",
+            duration: 6000,
+            action: {
+              label: "Enable",
+              onPress: async () => {
+                await setRememberMe(true);
+                showToast({
+                  type: "success",
+                  message: `${bioInfo.label} sign-in enabled ✅`,
+                  subMessage: "You'll be able to sign in with one tap next time.",
+                  duration: 3000,
+                });
+              },
+            },
+          });
+        }
+      }
+    } catch {
+      // Non-critical — silently ignore
+    }
+  };
 
   useEffect(() => {
     if (hasRun.current) return;
@@ -57,7 +127,6 @@ export default function OAuthCallback() {
         if (params.sessionToken) {
           await Auth.setSessionToken(params.sessionToken);
 
-          // Parse and store user info
           if (params.user) {
             try {
               const decoded =
@@ -82,7 +151,6 @@ export default function OAuthCallback() {
           const rememberMe = await getRememberMe();
           if (rememberMe && Platform.OS !== "web") {
             await storeBiometricToken(params.sessionToken);
-            console.log("[OAuth] Biometric token stored for future sign-in");
           }
 
           // Clean URL
@@ -91,6 +159,10 @@ export default function OAuthCallback() {
           }
 
           setStatus("success");
+
+          // Show biometric enrollment prompt after a short delay
+          setTimeout(() => showBiometricEnrollmentPrompt(), 1500);
+
           setTimeout(() => router.replace("/(tabs)"), 800);
           return;
         }
@@ -114,6 +186,7 @@ export default function OAuthCallback() {
                   await storeBiometricToken(token);
                 }
                 setStatus("success");
+                setTimeout(() => showBiometricEnrollmentPrompt(), 1500);
                 setTimeout(() => router.replace("/(tabs)"), 800);
                 return;
               }
@@ -148,7 +221,6 @@ export default function OAuthCallback() {
           });
         }
 
-        // Store biometric token if Remember Me is enabled
         const rememberMe = await getRememberMe();
         if (rememberMe && Platform.OS !== "web") {
           await storeBiometricToken(result.sessionToken);
@@ -159,6 +231,7 @@ export default function OAuthCallback() {
         }
 
         setStatus("success");
+        setTimeout(() => showBiometricEnrollmentPrompt(), 1500);
         setTimeout(() => router.replace("/(tabs)"), 800);
       } catch (err) {
         console.error("[OAuth] Callback error:", err);
@@ -172,17 +245,14 @@ export default function OAuthCallback() {
     handleCallback();
   }, []);
 
-  // ── Processing: Branded splash ────────────────────────────────────────────
   if (status === "processing") {
     return <AuthSplash message="Signing you in…" subMessage="Setting up your dashboard" />;
   }
 
-  // ── Success: Brief confirmation ───────────────────────────────────────────
   if (status === "success") {
     return <AuthSplash message="Welcome to Clickeros AI! ✅" subMessage="Loading your dashboard…" />;
   }
 
-  // ── Error: Show error with retry ──────────────────────────────────────────
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#7C3AED" }} edges={["top", "bottom", "left", "right"]}>
       <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 32 }}>
