@@ -1,6 +1,13 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users } from "../drizzle/schema";
+import {
+  InsertUser,
+  users,
+  userNotificationSettings,
+  campaignAlertOverrides,
+  type InsertUserNotificationSettings,
+  type InsertCampaignAlertOverride,
+} from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -89,4 +96,89 @@ export async function getUserByOpenId(openId: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
-// TODO: add feature queries here as your schema grows.
+// ── Notification Settings ────────────────────────────────────────────────────
+
+export async function getUserNotificationSettings(userId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  try {
+    const result = await db
+      .select()
+      .from(userNotificationSettings)
+      .where(eq(userNotificationSettings.userId, userId))
+      .limit(1);
+    return result.length > 0 ? result[0] : null;
+  } catch (err) {
+    console.error("[DB] getUserNotificationSettings failed:", err);
+    return null;
+  }
+}
+
+export async function upsertUserNotificationSettings(
+  userId: number,
+  settings: Omit<InsertUserNotificationSettings, "id" | "userId" | "createdAt" | "updatedAt">
+): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  try {
+    await db
+      .insert(userNotificationSettings)
+      .values({ userId, ...settings })
+      .onDuplicateKeyUpdate({ set: settings });
+  } catch (err) {
+    console.error("[DB] upsertUserNotificationSettings failed:", err);
+  }
+}
+
+// ── Campaign Alert Overrides ──────────────────────────────────────────────────
+
+export async function getCampaignAlertOverridesForUser(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  try {
+    return await db
+      .select()
+      .from(campaignAlertOverrides)
+      .where(eq(campaignAlertOverrides.userId, userId));
+  } catch (err) {
+    console.error("[DB] getCampaignAlertOverridesForUser failed:", err);
+    return [];
+  }
+}
+
+export async function upsertCampaignAlertOverride(
+  userId: number,
+  campaignId: string,
+  override: Omit<InsertCampaignAlertOverride, "id" | "userId" | "campaignId" | "createdAt" | "updatedAt">
+): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  try {
+    await db
+      .insert(campaignAlertOverrides)
+      .values({ userId, campaignId, ...override })
+      .onDuplicateKeyUpdate({ set: override });
+  } catch (err) {
+    console.error("[DB] upsertCampaignAlertOverride failed:", err);
+  }
+}
+
+export async function deleteCampaignAlertOverride(
+  userId: number,
+  campaignId: string
+): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  try {
+    await db
+      .delete(campaignAlertOverrides)
+      .where(
+        and(
+          eq(campaignAlertOverrides.userId, userId),
+          eq(campaignAlertOverrides.campaignId, campaignId)
+        )
+      );
+  } catch (err) {
+    console.error("[DB] deleteCampaignAlertOverride failed:", err);
+  }
+}

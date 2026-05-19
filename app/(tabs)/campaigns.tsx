@@ -334,6 +334,7 @@ function CampaignsScreenInner() {
                 shadowOpacity: 0.05, shadowRadius: 4, elevation: 2,
                 opacity: isLoading ? 0.4 : isRefreshing ? 0.65 : 1,
               }}
+              onPress={() => router.push(`/campaigns/${item.id}` as any)}
               activeOpacity={0.7}
             >
               {/* Campaign Header */}

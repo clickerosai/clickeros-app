@@ -213,3 +213,11 @@
 - [x] Wrap all tab screens in ErrorBoundary
 - [x] Campaign search and status filter bar
 - [x] Connect to real Clickeros AI backend (replace mock data)
+
+## Campaign Detail & Database Persistence
+- [x] Campaign Detail screen /campaigns/[id] (metrics history, creative previews, optimization timeline)
+- [x] Drizzle ORM schema: user_notification_settings table
+- [x] Drizzle ORM schema: campaign_alert_overrides table
+- [x] tRPC endpoints: getSettings, saveSettings, getOverrides, saveOverride, deleteOverride
+- [x] Update client to sync settings/overrides to DB when user is authenticated
+- [x] Navigate to Campaign Detail from campaign card tap
