@@ -221,3 +221,9 @@
 - [x] tRPC endpoints: getSettings, saveSettings, getOverrides, saveOverride, deleteOverride
 - [x] Update client to sync settings/overrides to DB when user is authenticated
 - [x] Navigate to Campaign Detail from campaign card tap
+
+## DB Sync Wiring
+- [x] Wire useSettingsSync into notification-settings.tsx handleSave
+- [x] Wire syncOverrideToDb into campaign-alert-sheet.tsx handleSave
+- [x] Add metrics history API to Clickeros client and tRPC router
+- [x] Update Campaign Detail screen to use real metrics history

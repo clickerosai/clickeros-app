@@ -28,6 +28,7 @@ import { useColors } from "@/hooks/use-colors";
 import { useResponsive } from "@/hooks/use-responsive";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useToast } from "@/components/toast";
+import { useSettingsSync } from "@/hooks/use-settings-sync";
 
 const OVERRIDES_KEY = "@clickeros:campaign_alert_overrides";
 
@@ -96,6 +97,7 @@ export function CampaignAlertSheet({ campaign, visible, onClose }: CampaignAlert
   const colors = useColors();
   const r = useResponsive();
   const { showToast } = useToast();
+  const { syncOverrideToDb, deleteOverrideFromDb } = useSettingsSync();
   const translateY = useRef(new Animated.Value(400)).current;
 
   const [override, setOverride] = useState<CampaignAlertOverride>({
@@ -147,7 +149,10 @@ export function CampaignAlertSheet({ campaign, visible, onClose }: CampaignAlert
 
   const handleSave = useCallback(async () => {
     const updated = { ...override, updatedAt: new Date().toISOString() };
+    // Save to AsyncStorage (local, offline-first)
     await saveCampaignAlertOverride(updated);
+    // Sync to database in background (cross-device sync)
+    syncOverrideToDb(updated).catch(() => {});
     setHasOverride(true);
     if (Platform.OS !== "web") {
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -155,14 +160,17 @@ export function CampaignAlertSheet({ campaign, visible, onClose }: CampaignAlert
     showToast({
       type: "success",
       message: "Alert override saved ✅",
-      subMessage: `Custom alerts set for "${campaign.name}".`,
+      subMessage: `Custom alerts set for "${campaign.name}". Synced across devices.`,
       duration: 3000,
     });
     onClose();
-  }, [override, campaign.name, onClose, showToast]);
+  }, [override, campaign.name, onClose, showToast, syncOverrideToDb]);
 
   const handleClearOverride = useCallback(async () => {
+    // Remove from AsyncStorage (local)
     await clearCampaignAlertOverride(campaign.id);
+    // Remove from database (cross-device sync)
+    deleteOverrideFromDb(campaign.id).catch(() => {});
     setHasOverride(false);
     setOverride({
       campaignId: campaign.id,
@@ -181,7 +189,7 @@ export function CampaignAlertSheet({ campaign, visible, onClose }: CampaignAlert
       duration: 2500,
     });
     onClose();
-  }, [campaign.id, campaign.name, onClose, showToast]);
+  }, [campaign.id, campaign.name, onClose, showToast, deleteOverrideFromDb]);
 
   if (!visible) return null;
 

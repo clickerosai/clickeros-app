@@ -14,7 +14,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import * as Haptics from "expo-haptics";
 import { trpc } from "@/lib/trpc";
 import { ScreenContainer } from "@/components/screen-container";
@@ -167,6 +167,19 @@ function CampaignDetailInner() {
 
   const isLoading = query.isLoading;
 
+  // Fetch real metrics history from tRPC (uses Clickeros API or mock fallback)
+  const historyQuery = trpc.dashboard.campaignMetricsHistory.useQuery(
+    { campaignId: id ?? "", period: "7d" },
+    { enabled: !!id && !isLoading, staleTime: 5 * 60_000 }
+  );
+
+  const metricsHistory = historyQuery.data ?? [];
+
+  // Derive chart arrays from real data
+  const roasHistory  = useMemo(() => metricsHistory.map((d) => d.roas),  [metricsHistory]);
+  const ctrHistory   = useMemo(() => metricsHistory.map((d) => d.ctr),   [metricsHistory]);
+  const spendHistory = useMemo(() => metricsHistory.map((d) => d.spend), [metricsHistory]);
+
   const handleOptimize = useCallback(async () => {
     if (Platform.OS !== "web") await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     showToast({ type: "info", message: "Optimizing campaign…", subMessage: "Analyzing performance data.", duration: 2500 });
@@ -212,13 +225,6 @@ function CampaignDetailInner() {
       </ScreenContainer>
     );
   }
-
-  // Generate mock 7-day history data based on current metrics
-  const roasBase = parseFloat(campaign.roas?.replace(/[^0-9.]/g, "") ?? "3.5");
-  const ctrBase  = parseFloat(campaign.ctr?.replace(/[^0-9.]/g, "") ?? "4.5");
-  const roasHistory  = Array.from({ length: 7 }, (_, i) => Math.max(0.5, roasBase + (Math.random() - 0.5) * 0.8));
-  const ctrHistory   = Array.from({ length: 7 }, (_, i) => Math.max(0.5, ctrBase + (Math.random() - 0.5) * 1.2));
-  const spendHistory = Array.from({ length: 7 }, (_, i) => Math.max(10, 150 + (Math.random() - 0.5) * 60));
 
   const optimizationTimeline: OptimizationEvent[] = [
     { date: "Today", type: "ai_optimize", title: "AI Optimization Applied", desc: "Budget reallocated from underperforming ad sets to top performers. Bid strategy updated.", impact: "ROAS improved by +0.4x" },

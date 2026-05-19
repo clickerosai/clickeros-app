@@ -61,6 +61,23 @@ export interface ClickerosTopContent {
   revenue: number;
 }
 
+export interface ClickerosDailyMetric {
+  date: string; // ISO date string e.g. "2026-05-12"
+  roas: number;
+  ctr: number;
+  spend: number;
+  impressions: number;
+  clicks: number;
+  conversions: number;
+  revenue: number;
+}
+
+export interface ClickerosCampaignMetricsHistory {
+  campaignId: string;
+  period: "7d" | "30d" | "90d";
+  metrics: ClickerosDailyMetric[];
+}
+
 export interface ClickerosAdGenerationRequest {
   businessName: string;
   productService: string;
@@ -220,6 +237,29 @@ class ClickerosApiClient {
       const { data } = await this.client.get<{ content: ClickerosTopContent[] }>("/analytics/top-content");
       return data.content;
     } catch {
+      return null;
+    }
+  }
+
+  // ── Campaign Metrics History ───────────────────────────────────────────────
+
+  /**
+   * Fetch 7-day (or other period) metrics history for a specific campaign.
+   * Returns null when API is not configured or the request fails.
+   */
+  async getCampaignMetricsHistory(
+    campaignId: string,
+    period: "7d" | "30d" | "90d" = "7d"
+  ): Promise<ClickerosCampaignMetricsHistory | null> {
+    if (!this.client) return null;
+    try {
+      const { data } = await this.client.get<ClickerosCampaignMetricsHistory>(
+        `/campaigns/${campaignId}/metrics`,
+        { params: { period } }
+      );
+      return data;
+    } catch (err) {
+      console.error(`[ClickerosAPI] getCampaignMetricsHistory(${campaignId}) failed:`, err);
       return null;
     }
   }

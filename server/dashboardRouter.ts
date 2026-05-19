@@ -1,5 +1,6 @@
+import { z } from "zod";
 import { router, publicProcedure } from "./_core/trpc";
-import { clickerosApi, isApiConfigured } from "../lib/clickeros-api";
+import { clickerosApi, isApiConfigured, type ClickerosDailyMetric } from "../lib/clickeros-api";
 
 // Log API connection status on startup
 if (isApiConfigured()) {
@@ -276,4 +277,53 @@ export const dashboardRouter = router({
       { rank: 4, title: "Facebook Ads vs Google Ads in 2025", traffic: fmtK(vary(5100, 0.05)), revenue: fmtCurrency(vary(1890, 0.05)) },
     ];
   }),
+
+  /**
+   * GET /api/trpc/dashboard.campaignMetricsHistory
+   * Returns daily metrics for a specific campaign over the requested period.
+   * Uses live Clickeros API data when CLICKEROS_API_KEY is configured;
+   * falls back to generated mock data otherwise.
+   */
+  campaignMetricsHistory: publicProcedure
+    .input(z.object({
+      campaignId: z.string(),
+      period: z.enum(["7d", "30d", "90d"]).default("7d"),
+    }))
+    .query(async ({ input }): Promise<ClickerosDailyMetric[]> => {
+      // Try real API first
+      if (isApiConfigured()) {
+        const liveHistory = await clickerosApi.getCampaignMetricsHistory(input.campaignId, input.period);
+        if (liveHistory?.metrics && liveHistory.metrics.length > 0) {
+          return liveHistory.metrics;
+        }
+      }
+
+      // Fallback: generate realistic mock history
+      const days = input.period === "7d" ? 7 : input.period === "30d" ? 30 : 90;
+      const baseRoas = vary(3.8, 0.1);
+      const baseCtr  = vary(4.5, 0.1);
+      const baseSpend = vary(150, 0.1);
+
+      return Array.from({ length: days }, (_, i) => {
+        const date = new Date();
+        date.setDate(date.getDate() - (days - 1 - i));
+        const roas  = Math.max(0.5, vary(baseRoas, 0.12));
+        const ctr   = Math.max(0.3, vary(baseCtr, 0.12));
+        const spend = Math.max(10, vary(baseSpend, 0.15));
+        const impressions = Math.round(vary(45000, 0.1));
+        const clicks = Math.round(impressions * (ctr / 100));
+        const conversions = Math.round(clicks * vary(0.04, 0.15));
+        const revenue = Math.round(spend * roas);
+        return {
+          date: date.toISOString().split("T")[0],
+          roas: Math.round(roas * 10) / 10,
+          ctr: Math.round(ctr * 10) / 10,
+          spend: Math.round(spend),
+          impressions,
+          clicks,
+          conversions,
+          revenue,
+        };
+      });
+    }),
 });

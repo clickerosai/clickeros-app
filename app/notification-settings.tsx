@@ -33,6 +33,7 @@ import {
   requestNotificationPermissions,
   type NotificationType,
 } from "@/lib/notifications";
+import { useSettingsSync } from "@/hooks/use-settings-sync";
 
 const SETTINGS_KEY = "@clickeros:notification_settings";
 
@@ -158,6 +159,7 @@ export default function NotificationSettingsScreen() {
   const colors = useColors();
   const r = useResponsive();
   const { showToast } = useToast();
+  const { syncSettingsToDb } = useSettingsSync();
 
   const [settings, setSettings] = useState<NotificationSettings>(DEFAULT_NOTIFICATION_SETTINGS);
   const [permissionStatus, setPermissionStatus] = useState<"granted" | "denied" | "undetermined">("undetermined");
@@ -176,12 +178,15 @@ export default function NotificationSettingsScreen() {
   const handleSave = useCallback(async (newSettings: NotificationSettings) => {
     setSettings(newSettings);
     setIsSaving(true);
+    // Save to AsyncStorage (local, offline-first)
     await saveNotificationSettings(newSettings);
+    // Sync to database in background (cross-device sync)
+    syncSettingsToDb(newSettings).catch(() => {});
     setIsSaving(false);
     if (Platform.OS !== "web") {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
-  }, []);
+  }, [syncSettingsToDb]);
 
   const handleToggleEnabled = useCallback(async (value: boolean) => {
     if (value && permissionStatus !== "granted") {
