@@ -27,6 +27,7 @@
     },
     "production": {
       "autoIncrement": true,
+      "npmInstallCommand": "install",
       "android": {
         "buildType": "app-bundle",
         "gradleCommand": ":app:bundleRelease"
@@ -37,6 +38,7 @@
     },
     "google-play": {
       "extends": "production",
+      "npmInstallCommand": "install",
       "android": {
         "buildType": "app-bundle",
         "gradleCommand": ":app:bundleRelease"
