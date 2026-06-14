@@ -2,7 +2,7 @@ import "@/global.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack, useSegments } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
 import { Platform } from "react-native";
@@ -27,6 +27,7 @@ import {
 } from "@/lib/notifications";
 import { WhatsNewModal } from "@/components/whats-new-modal";
 import { OfflineBanner } from "@/components/offline-banner";
+import { SessionTimeoutManager } from "@/components/session-timeout-manager";
 
 // Initialize notification handler at module level (required by expo-notifications)
 setupNotificationHandler();
@@ -225,12 +226,35 @@ export default function RootLayout() {
     return null;
   }
 
+  /**
+   * Inner component that has access to ToastProvider and QueryClientProvider context.
+   * Initializes the session timeout system.
+   */
+  function SessionTimeoutManagerWrapper() {
+    // Check if user is authenticated before enabling timeout
+    const [isAuthenticated, setIsAuthenticated] = React.useState(false);
+
+    React.useEffect(() => {
+      // Check if session token exists
+      Auth.getSessionToken()
+        .then((token) => {
+          setIsAuthenticated(!!token);
+        })
+        .catch(() => {
+          setIsAuthenticated(false);
+        });
+    }, []);
+
+    return <SessionTimeoutManager enabled={isAuthenticated} />;
+  }
+
   const content = (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <trpc.Provider client={trpcClient} queryClient={queryClient}>
         <QueryClientProvider client={queryClient}>
           <ToastProvider>
             <ToastBridge />
+            <SessionTimeoutManagerWrapper />
             <SessionGuard sessionExpiredRef={sessionExpiredRef} />
             <WhatsNewModal />
             <OfflineBanner />

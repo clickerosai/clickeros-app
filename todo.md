@@ -227,3 +227,27 @@
 - [x] Wire syncOverrideToDb into campaign-alert-sheet.tsx handleSave
 - [x] Add metrics history API to Clickeros client and tRPC router
 - [x] Update Campaign Detail screen to use real metrics history
+
+## Session Timeout System (10-Minute Inactivity)
+- [x] Create useSessionTimeout hook with activity tracking (clicks, taps, scrolls, keyboard)
+- [x] Implement 9-minute inactivity timer with warning trigger
+- [x] Build SessionTimeoutWarningModal with 60-second countdown (MM:SS format)
+- [x] Add color-coded timer (violet/amber/red based on time remaining)
+- [x] Implement "Stay Logged In" button to cancel logout
+- [x] Implement "Log Out Now" button for immediate logout
+- [x] Create session-timeout-handler.ts for logout orchestration
+- [x] Wire draft campaign auto-save before logout
+- [x] Create session-timeout-notifications.ts for push + in-app alerts
+- [x] Send push notification on warning (native platforms only)
+- [x] Add in-app notification to notification center
+- [x] Integrate SessionTimeoutManager into root layout
+- [x] Add authentication check before enabling timeout
+- [x] Handle foreground/background state transitions (AppState)
+- [x] Implement activity debouncing (500ms) to avoid excessive timer resets
+- [x] Disable timeout on auth screens (/signup, /oauth/callback)
+- [x] Clear query cache and auth tokens on logout
+- [x] Show security message on timeout logout
+- [x] Redirect to /signup after timeout logout
+- [x] Support web (document events) and mobile (AppState) activity tracking
+- [x] Create comprehensive test suite (session-timeout.test.ts)
+- [x] Ensure cross-platform compatibility (iOS, Android, web, tablets)
