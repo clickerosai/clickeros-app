@@ -91,6 +91,7 @@ export default function ConnectAccountsScreen() {
 
   const [connections, setConnections] = useState<Record<string, ConnectionStatus>>({});
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [footerHeight, setFooterHeight] = useState(0);
 
   const connectedCount = Object.values(connections).filter((s) => s === "connected").length;
   const requiredConnected = PLATFORMS.filter((p) => p.required).every(
@@ -164,7 +165,7 @@ export default function ConnectAccountsScreen() {
 
   return (
     <ScreenContainer>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: footerHeight + 20 }}>
         {/* Header */}
         <View style={{ paddingHorizontal: r.px, paddingTop: 16, paddingBottom: 16, borderBottomWidth: 1, borderBottomColor: colors.border }}>
           <TouchableOpacity
@@ -307,8 +308,10 @@ export default function ConnectAccountsScreen() {
       </ScrollView>
 
       {/* Fixed Bottom CTA */}
-      <View style={{
-        position: "absolute", bottom: 0, left: 0, right: 0,
+      <View
+        onLayout={(event) => setFooterHeight(event.nativeEvent.layout.height)}
+        style={{
+          position: "absolute", bottom: 0, left: 0, right: 0,
         backgroundColor: colors.background,
         paddingHorizontal: r.px, paddingTop: 12, paddingBottom: Platform.OS === "ios" ? 32 : 16,
         borderTopWidth: 1, borderTopColor: colors.border,

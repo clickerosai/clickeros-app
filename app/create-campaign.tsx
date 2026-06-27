@@ -146,6 +146,7 @@ export default function CreateCampaignScreen() {
   const [step, setStep] = useState(1);
   const [form, setForm] = useState<CampaignForm>(INITIAL_FORM);
   const [errors, setErrors] = useState<Partial<Record<keyof CampaignForm, string>>>({});
+  const [footerHeight, setFooterHeight] = useState(0);
 
   useEffect(() => {
     const loadAd = async () => {
@@ -278,7 +279,7 @@ export default function CreateCampaignScreen() {
         <ScrollView
           ref={scrollRef}
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ padding: r.px, paddingBottom: 120 }}
+          contentContainerStyle={{ padding: r.px, paddingBottom: footerHeight + 20 }}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="interactive"
         >
@@ -652,8 +653,10 @@ export default function CreateCampaignScreen() {
         </ScrollView>
 
         {/* Fixed Bottom Navigation */}
-        <View style={{
-          position: "absolute", bottom: 0, left: 0, right: 0,
+        <View
+          onLayout={(event) => setFooterHeight(event.nativeEvent.layout.height)}
+          style={{
+            position: "absolute", bottom: 0, left: 0, right: 0,
           backgroundColor: colors.background,
           paddingHorizontal: r.px, paddingTop: 12,
           paddingBottom: Platform.OS === "ios" ? 32 : 16,

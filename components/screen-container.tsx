@@ -48,8 +48,10 @@ export function ScreenContainer({
   ...props
 }: ScreenContainerProps) {
   const { width } = useWindowDimensions();
+  const isTablet = width >= 768 && width < 1024;
   const isLargeScreen = width >= 768;
   const isWeb = Platform.OS === "web";
+  const maxWidth = isWeb && width >= 1024 ? 1200 : "100%";
 
   return (
     <View
@@ -62,13 +64,14 @@ export function ScreenContainer({
         style={style}
       >
         {constrained && (isLargeScreen || isWeb) ? (
-          // On large screens, center content with max-width
+          // On large screens, center content with responsive max-width
           <View
             style={{
               flex: 1,
-              maxWidth: 860,
+              maxWidth: maxWidth,
               width: "100%",
               alignSelf: "center",
+              paddingHorizontal: isTablet ? 24 : 0,
             }}
           >
             <View className={cn("flex-1", className)}>{children}</View>
