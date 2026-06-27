@@ -8,9 +8,11 @@ import {
   Platform,
   Alert,
 } from "react-native";
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { useRouter } from "expo-router";
 import * as Haptics from "expo-haptics";
+import { loadSelectedAd, clearSelectedAd } from "@/lib/selected-ad-context";
+import type { AdVariation } from "@/server/adGeneratorRouter";
 import { ScreenContainer } from "@/components/screen-container";
 import { useColors } from "@/hooks/use-colors";
 import { useResponsive } from "@/hooks/use-responsive";
@@ -144,6 +146,28 @@ export default function CreateCampaignScreen() {
   const [step, setStep] = useState(1);
   const [form, setForm] = useState<CampaignForm>(INITIAL_FORM);
   const [errors, setErrors] = useState<Partial<Record<keyof CampaignForm, string>>>({});
+
+  useEffect(() => {
+    const loadAd = async () => {
+      try {
+        const selectedAd = await loadSelectedAd();
+        if (selectedAd) {
+          console.log("[CreateCampaign] Loaded selected ad:", selectedAd.id);
+          setForm((prev) => ({
+            ...prev,
+            objective: selectedAd.campaignObjective || prev.objective,
+            platform: selectedAd.platform || prev.platform,
+            offer: selectedAd.body || prev.offer,
+            cta: selectedAd.cta || prev.cta,
+          }));
+          await clearSelectedAd();
+        }
+      } catch (error) {
+        console.error("[CreateCampaign] Failed to load selected ad:", error);
+      }
+    };
+    loadAd();
+  }, []);
 
   const update = useCallback(<K extends keyof CampaignForm>(key: K, value: CampaignForm[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));

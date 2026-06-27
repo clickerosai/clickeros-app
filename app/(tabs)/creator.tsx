@@ -12,7 +12,9 @@ import {
 } from "react-native";
 import { useState, useRef, useCallback, useEffect } from "react";
 import * as Haptics from "expo-haptics";
+import { useRouter } from "expo-router";
 import { trpc } from "@/lib/trpc";
+import { saveSelectedAd } from "@/lib/selected-ad-context";
 import { ScreenContainer } from "@/components/screen-container";
 import { useColors } from "@/hooks/use-colors";
 import { useResponsive } from "@/hooks/use-responsive";
@@ -113,6 +115,7 @@ function ScoreBar({ score, breakdown }: { score: number; breakdown: AdVariation[
 function CreatorScreenInner() {
   const colors = useColors();
   const r = useResponsive();
+  const router = useRouter();
 
   // ── Form state ────────────────────────────────────────────────────────────
   const [businessName,      setBusinessName]      = useState("");
@@ -625,6 +628,21 @@ function CreatorScreenInner() {
                         <TouchableOpacity
                           style={{ flex: 1, backgroundColor: "#7C3AED", borderRadius: 8, height: 44, alignItems: "center", justifyContent: "center" }}
                           activeOpacity={0.7}
+                          onPress={async () => {
+                            try {
+                              if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                              console.log("[Creator] Selected Ad Variation:", ad.id);
+                              await saveSelectedAd({
+                                ...ad,
+                                platform,
+                                campaignObjective,
+                              });
+                              router.push("/create-campaign");
+                            } catch (error) {
+                              console.error("[Creator] Failed to save selected ad:", error);
+                              Alert.alert("Error", "Failed to save ad. Please try again.");
+                            }
+                          }}
                         >
                           <Text style={{ color: "#FFFFFF", fontSize: r.fontSize.sm, fontWeight: "600" }}>Use This Ad</Text>
                         </TouchableOpacity>
