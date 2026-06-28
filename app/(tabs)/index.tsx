@@ -28,6 +28,7 @@ import {
 import { getNotificationSettings } from "@/app/notification-settings";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ErrorBoundary } from "@/components/error-boundary";
+import { Dropdown, type DropdownOption } from "@/components/ui/dropdown";
 
 const NOTIF_PROMPT_KEY = "@clickeros:notif_prompt_shown";
 
@@ -67,6 +68,38 @@ function DashboardScreenInner() {
   const r = useResponsive();
   const [unreadNotifCount, setUnreadNotifCount] = useState(0);
   const { showToast } = useToast();
+
+  // Dropdown state management
+  const [selectedCTA, setSelectedCTA] = useState<string>("");
+  const [selectedAudience, setSelectedAudience] = useState<string>("");
+  const [selectedOffer, setSelectedOffer] = useState<string>("");
+
+  // Dropdown options
+  const ctaOptions: DropdownOption[] = [
+    { label: "Learn More", value: "learn_more" },
+    { label: "Shop Now", value: "shop_now" },
+    { label: "Click Here", value: "click_here" },
+    { label: "Buy Now", value: "buy_now" },
+    { label: "Click to See", value: "click_to_see" },
+  ];
+
+  const audienceOptions: DropdownOption[] = [
+    { label: "18-24", value: "18_24" },
+    { label: "25-34", value: "25_34" },
+    { label: "35-44", value: "35_44" },
+    { label: "45-54", value: "45_54" },
+    { label: "55-64", value: "55_64" },
+    { label: "65+", value: "65_plus" },
+  ];
+
+  const offerOptions: DropdownOption[] = [
+    { label: "10% off", value: "10_off" },
+    { label: "20% off", value: "20_off" },
+    { label: "30% off", value: "30_off" },
+    { label: "Free shipping", value: "free_shipping" },
+    { label: "Buy one get one", value: "bogo" },
+    { label: "Limited time offer", value: "limited_time" },
+  ];
 
   // Load unread notification count
   useEffect(() => {
@@ -401,6 +434,32 @@ function DashboardScreenInner() {
                   </TouchableOpacity>
                 );
               })}
+        </View>
+
+        {/* Dropdown Lists Section */}
+        <View style={{ marginHorizontal: r.px, marginTop: 20, backgroundColor: colors.surface, borderRadius: 16, padding: r.isXs ? 14 : 16, borderWidth: 1, borderColor: colors.border }}>
+          <Text style={{ color: colors.foreground, fontSize: r.fontSize.base, fontWeight: "700", marginBottom: 16 }}>Ad Campaign Options</Text>
+          <Dropdown
+            label="Call to Action"
+            options={ctaOptions}
+            value={selectedCTA}
+            onSelect={setSelectedCTA}
+            placeholder="Select a CTA"
+          />
+          <Dropdown
+            label="Target Audience"
+            options={audienceOptions}
+            value={selectedAudience}
+            onSelect={setSelectedAudience}
+            placeholder="Select age group"
+          />
+          <Dropdown
+            label="Offer / Promotion"
+            options={offerOptions}
+            value={selectedOffer}
+            onSelect={setSelectedOffer}
+            placeholder="Select promotion"
+          />
         </View>
 
         {/* Platform Stats */}

@@ -259,3 +259,12 @@
 - [x] Pre-fill campaign creation form with selected ad variation data
 - [x] Test the complete flow from ad selection to campaign creation
 - [x] Verify campaign management receives and displays selected ad data
+
+## Dropdown Lists (Call to Action, Target Audience, Offer/Promotion)
+- [x] Create reusable Dropdown component with open/close state
+- [x] Add Call to Action dropdown (Learn More, Shop Now, Click Here, Buy Now, Click to See)
+- [x] Add Target Audience dropdown (18-24, 25-34, 35-44, 45-54, 55-64, 65+)
+- [x] Add Offer/Promotion dropdown (10% off, 20% off, 30% off, Free shipping, Buy one get one, Limited time offer)
+- [x] Integrate dropdowns into Dashboard screen
+- [x] Add state management for dropdown selections
+- [x] Test dropdowns on mobile and tablet
