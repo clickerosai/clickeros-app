@@ -268,3 +268,9 @@
 - [x] Integrate dropdowns into Dashboard screen
 - [x] Add state management for dropdown selections
 - [x] Test dropdowns on mobile and tablet
+
+## Header Layout Fix
+- [x] Fix Campaign Manager header padding and font size on mobile
+- [x] Reduce top padding from 16px to 12px to prevent text cutoff
+- [x] Change title font size from 2xl to xl for better mobile fit
+- [x] Adjust header alignment from center to flex-start

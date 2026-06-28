@@ -224,10 +224,10 @@ function CampaignsScreenInner() {
   return (
     <ScreenContainer>
       {/* Fixed Header */}
-      <View style={{ paddingHorizontal: r.px, paddingTop: 16, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: colors.border }}>
-        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+      <View style={{ paddingHorizontal: r.px, paddingTop: 12, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: colors.border }}>
+        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
           <View style={{ flex: 1, minWidth: 0 }}>
-            <Text style={{ color: colors.foreground, fontSize: r.fontSize["2xl"], fontWeight: "700" }}>Campaign Manager</Text>
+            <Text style={{ color: colors.foreground, fontSize: r.fontSize.xl, fontWeight: "700" }}>Campaign Manager</Text>
             <View style={{ flexDirection: "row", alignItems: "center", gap: 5, marginTop: 3 }}>
               {isLoading ? (
                 <ActivityIndicator size="small" color={colors.muted} />
