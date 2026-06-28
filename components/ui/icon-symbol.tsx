@@ -20,6 +20,7 @@ const MAPPING = {
   "chevron.left.forwardslash.chevron.right": "code",
   "chevron.right": "chevron-right",
   "chevron.left": "chevron-left",
+  "chevron.down": "expand-more",
   // Tab bar icons
   "chart.bar.fill": "bar-chart",
   "megaphone.fill": "campaign",
