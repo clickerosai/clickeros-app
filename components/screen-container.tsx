@@ -5,14 +5,14 @@ import { cn } from "@/lib/utils";
 
 export interface ScreenContainerProps extends ViewProps {
   /**
+   * Additional offset to apply to the bottom padding of the content. Useful for fixed bottom components like tab bars.
+   */
+  bottomOffset?: number;
+  /**
    * SafeArea edges to apply. Defaults to ["top", "left", "right"].
    * Bottom is typically handled by Tab Bar.
    */
   edges?: Edge[];
-  /**
-   * Additional offset to apply to the bottom padding of the content. Useful for fixed bottom components like tab bars.
-   */
-  bottomOffset?: number;
   /**
    * Tailwind className for the content area.
    */
@@ -64,12 +64,9 @@ export function ScreenContainer({
       <SafeAreaView
         edges={edges}
         className={cn("flex-1", safeAreaClassName)}
-        style={[
-          style,
-          { paddingBottom: bottomOffset },
-        ]}
+        style={style}
       >
-        <View className={cn("flex-1", className)}>{children}</View>
+        <View className={cn("flex-1", className)} style={{ paddingBottom: bottomOffset }}>{children}</View>
       </SafeAreaView>
     </View>
   );
