@@ -1,6 +1,6 @@
-import { View, type ViewProps, Platform } from "react-native";
+import { View, type ViewProps } from "react-native";
 import { SafeAreaView, type Edge } from "react-native-safe-area-context";
-import { useWindowDimensions } from "react-native";
+
 import { cn } from "@/lib/utils";
 
 export interface ScreenContainerProps extends ViewProps {
@@ -9,6 +9,10 @@ export interface ScreenContainerProps extends ViewProps {
    * Bottom is typically handled by Tab Bar.
    */
   edges?: Edge[];
+  /**
+   * Additional offset to apply to the bottom padding of the content. Useful for fixed bottom components like tab bars.
+   */
+  bottomOffset?: number;
   /**
    * Tailwind className for the content area.
    */
@@ -21,21 +25,22 @@ export interface ScreenContainerProps extends ViewProps {
    * Additional className for the SafeAreaView (content layer).
    */
   safeAreaClassName?: string;
-  /**
-   * When true, constrains content to a max-width on large screens (web/tablet/desktop).
-   * Defaults to false for full-bleed mobile layouts.
-   */
-  constrained?: boolean;
 }
 
 /**
- * A container component that properly handles SafeArea, background colors,
- * and responsive layout across all device sizes.
+ * A container component that properly handles SafeArea and background colors.
  *
- * - On phones: full-width, edge-to-edge
- * - On tablets/desktop: optionally constrained to max-width with centered content
- * - Always handles safe area insets correctly
- * - Prevents content from going behind status bar or home indicator
+ * The outer View extends to full screen (including status bar area) with the background color,
+ * while the inner SafeAreaView ensures content is within safe bounds.
+ *
+ * Usage:
+ * ```tsx
+ * <ScreenContainer className="p-4">
+ *   <Text className="text-2xl font-bold text-foreground">
+ *     Welcome
+ *   </Text>
+ * </ScreenContainer>
+ * ```
  */
 export function ScreenContainer({
   children,
@@ -43,42 +48,28 @@ export function ScreenContainer({
   className,
   containerClassName,
   safeAreaClassName,
-  constrained = false,
   style,
+  bottomOffset = 0,
   ...props
 }: ScreenContainerProps) {
-  const { width } = useWindowDimensions();
-  const isTablet = width >= 768 && width < 1024;
-  const isLargeScreen = width >= 768;
-  const isWeb = Platform.OS === "web";
-  const maxWidth = isWeb && width >= 1024 ? 1200 : "100%";
-
   return (
     <View
-      className={cn("flex-1 bg-background", containerClassName)}
+      className={cn(
+        "flex-1",
+        "bg-background",
+        containerClassName
+      )}
       {...props}
     >
       <SafeAreaView
         edges={edges}
         className={cn("flex-1", safeAreaClassName)}
-        style={style}
+        style={[
+          style,
+          { paddingBottom: bottomOffset },
+        ]}
       >
-        {constrained && (isLargeScreen || isWeb) ? (
-          // On large screens, center content with responsive max-width
-          <View
-            style={{
-              flex: 1,
-              maxWidth: maxWidth,
-              width: "100%",
-              alignSelf: "center",
-              paddingHorizontal: isTablet ? 24 : 0,
-            }}
-          >
-            <View className={cn("flex-1", className)}>{children}</View>
-          </View>
-        ) : (
-          <View className={cn("flex-1", className)}>{children}</View>
-        )}
+        <View className={cn("flex-1", className)}>{children}</View>
       </SafeAreaView>
     </View>
   );
