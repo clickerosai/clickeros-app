@@ -29,6 +29,7 @@ import { getNotificationSettings } from "@/app/notification-settings";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { Dropdown, type DropdownOption } from "@/components/ui/dropdown";
+import { ScreenHeader } from "@/components/screen-header";
 
 const NOTIF_PROMPT_KEY = "@clickeros:notif_prompt_shown";
 
@@ -261,18 +262,33 @@ function DashboardScreenInner() {
         }
       >
         {/* Header */}
-        <View style={{ backgroundColor: "#7C3AED", paddingHorizontal: r.px, paddingTop: 20, paddingBottom: 28 }}>
-          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+        <View style={{ backgroundColor: "#7C3AED" }}>
+          <View style={{ paddingHorizontal: r.px, paddingTop: r.isXs ? 10 : 12, paddingBottom: 12, flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
             <View style={{ flex: 1, marginRight: 12 }}>
               <Text style={{ color: "rgba(255,255,255,0.75)", fontSize: r.fontSize.sm, fontWeight: "500" }}>
                 Welcome back 👋
               </Text>
-              <Text style={{ color: "#FFFFFF", fontSize: r.fontSize["2xl"], fontWeight: "700", marginTop: 2 }} numberOfLines={1}>
+              <Text style={{ color: "#FFFFFF", fontSize: r.isXs ? r.fontSize.lg : r.fontSize.xl, fontWeight: "700", marginTop: 2 }} numberOfLines={1}>
                 Clickeros Dashboard
               </Text>
+              {/* Live status row */}
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginTop: 6 }}>
+                {isLoading ? (
+                  <ActivityIndicator size="small" color="rgba(255,255,255,0.7)" />
+                ) : (
+                  <IconSymbol
+                    name={isRefreshing ? "arrow.triangle.2.circlepath" : "checkmark.circle.fill"}
+                    size={12}
+                    color={isRefreshing ? "rgba(255,255,255,0.6)" : "rgba(255,255,255,0.7)"}
+                  />
+                )}
+                <Text style={{ color: "rgba(255,255,255,0.7)", fontSize: r.fontSize.xs }}>
+                  {isLoading ? "Loading data…" : isRefreshing ? "Refreshing…" : `Updated ${formatTime(lastUpdated)} · Pull to refresh`}
+                </Text>
+              </View>
             </View>
             <TouchableOpacity
-              style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: "rgba(255,255,255,0.2)", alignItems: "center", justifyContent: "center" }}
+              style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: "rgba(255,255,255,0.2)", alignItems: "center", justifyContent: "center", flexShrink: 0 }}
               onPress={() => {
                 setUnreadNotifCount(0);
                 router.push("/notifications" as any);
@@ -294,21 +310,6 @@ function DashboardScreenInner() {
                 </View>
               )}
             </TouchableOpacity>
-          </View>
-          {/* Live status row */}
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginTop: 8 }}>
-            {isLoading ? (
-              <ActivityIndicator size="small" color="rgba(255,255,255,0.7)" />
-            ) : (
-              <IconSymbol
-                name={isRefreshing ? "arrow.triangle.2.circlepath" : "checkmark.circle.fill"}
-                size={12}
-                color={isRefreshing ? "rgba(255,255,255,0.6)" : "rgba(255,255,255,0.7)"}
-              />
-            )}
-            <Text style={{ color: "rgba(255,255,255,0.7)", fontSize: r.fontSize.xs }}>
-              {isLoading ? "Loading data…" : isRefreshing ? "Refreshing…" : `Updated ${formatTime(lastUpdated)} · Pull to refresh`}
-            </Text>
           </View>
         </View>
 

@@ -85,10 +85,10 @@ function AnalyticsScreenInner() {
         }
       >
         {/* Header */}
-        <View style={{ paddingHorizontal: r.px, paddingTop: 16, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: colors.border }}>
-          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
+        <View style={{ paddingHorizontal: r.px, paddingTop: r.isXs ? 10 : 12, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: colors.border }}>
+          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10, gap: 12 }}>
             <View style={{ flex: 1, minWidth: 0 }}>
-              <Text style={{ color: colors.foreground, fontSize: r.fontSize["2xl"], fontWeight: "700" }}>Analytics</Text>
+              <Text style={{ color: colors.foreground, fontSize: r.isXs ? r.fontSize.lg : r.fontSize.xl, fontWeight: "700" }}>Analytics</Text>
               {/* Live status */}
               <View style={{ flexDirection: "row", alignItems: "center", gap: 5, marginTop: 3 }}>
                 {isLoading ? (

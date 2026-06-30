@@ -281,12 +281,12 @@ function CreatorScreenInner() {
           keyboardDismissMode="interactive"
         >
           {/* ── Header ── */}
-          <View style={{ paddingHorizontal: r.px, paddingTop: 16, paddingBottom: 16 }}>
+          <View style={{ paddingHorizontal: r.px, paddingTop: r.isXs ? 10 : 12, paddingBottom: 12 }}>
             <View style={{ flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 4 }}>
-              <View style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: "#7C3AED15", alignItems: "center", justifyContent: "center" }}>
+              <View style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: "#7C3AED15", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                 <IconSymbol name="wand.and.stars" size={20} color="#7C3AED" />
               </View>
-              <Text style={{ color: colors.foreground, fontSize: r.fontSize["2xl"], fontWeight: "700" }}>AI Ads Creator</Text>
+              <Text style={{ color: colors.foreground, fontSize: r.isXs ? r.fontSize.lg : r.fontSize.xl, fontWeight: "700" }} numberOfLines={1}>AI Ads Creator</Text>
             </View>
             <Text style={{ color: colors.muted, fontSize: r.fontSize.base }}>
               Fill in your campaign details — the AI generates ads using ONLY your inputs.
