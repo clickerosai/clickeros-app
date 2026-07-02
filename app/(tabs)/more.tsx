@@ -106,10 +106,10 @@ function MoreScreenInner() {
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 32 }}>
         {/* Header */}
         <View style={{
-          paddingHorizontal: r.px, paddingTop: 16, paddingBottom: 16,
+          paddingHorizontal: r.px, paddingTop: r.isXs ? 10 : 12, paddingBottom: 12,
           borderBottomWidth: 1, borderBottomColor: colors.border,
         }}>
-          <Text style={{ color: colors.foreground, fontSize: r.fontSize["2xl"], fontWeight: "700" }}>All Features</Text>
+          <Text style={{ color: colors.foreground, fontSize: r.isXs ? r.fontSize.lg : r.fontSize.xl, fontWeight: "700" }}>All Features</Text>
           <Text style={{ color: colors.muted, fontSize: r.fontSize.base, marginTop: 4 }}>
             Explore all Clickeros AI tools
           </Text>

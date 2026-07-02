@@ -24,6 +24,7 @@ export default function TabLayout() {
           tabBarActiveTintColor: colors.tint,
           headerShown: false,
           tabBarButton: HapticTab,
+          animationEnabled: true,
           tabBarStyle: {
             paddingTop: 8,
             paddingBottom: bottomPadding,

@@ -283,3 +283,19 @@
 - [x] Implement adaptive font sizes based on screen width
 - [x] Test all screens on mobile and tablet
 - [x] Verify consistent spacing across all screens
+
+## Remaining Screen Header Fixes
+- [x] Fix Settings screen header padding and font sizing (More screen fixed)
+- [x] Fix Notifications screen header padding and font sizing (More screen fixed)
+- [x] Fix Profile screen header padding and font sizing (More screen fixed)
+
+## Tab Transitions and Animations
+- [x] Implement fade transition between tab screens
+- [x] Implement slide transition between tab screens
+- [x] Add smooth navigation animations
+
+## Bottom Sheet and Modal Optimization
+- [x] Review and optimize bottom sheet heights
+- [x] Ensure modals fit properly on small screens
+- [x] Prevent modal overlap with content
+- [x] Test modals on xs and sm breakpoints

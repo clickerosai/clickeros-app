@@ -92,7 +92,8 @@ export function Dropdown({
             borderWidth: 1,
             borderColor: colors.border,
             overflow: "hidden",
-            maxHeight: 250,
+            maxHeight: r.isXs ? 180 : r.isSm ? 200 : 250,
+            zIndex: 1000,
           }}
         >
           <FlatList
